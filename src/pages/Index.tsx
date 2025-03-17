@@ -111,6 +111,7 @@ const Index = () => {
     ];
   };
 
+  // This is now for display purposes only - AI makes the decisions
   const handleCropAllocationChange = (allocations: CropAllocation[]) => {
     setCropAllocations(allocations);
   };
@@ -121,14 +122,14 @@ const Index = () => {
         <header className="text-center mb-12">
           <div className="inline-flex items-center justify-center mb-3 bg-primary/10 px-4 py-2 rounded-full">
             <Tractor className="h-5 w-5 text-primary mr-2" />
-            <span className="text-sm font-semibold text-primary">Interactive Farm Planning</span>
+            <span className="text-sm font-semibold text-primary">AI-Powered Farm Planning</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             3D Farm Visualizer
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Enter your land size to visualize your farm in 3D with AI-recommended crop allocations.
-            Our system will determine the optimal crops for your farm size.
+            Our AI system will determine the optimal crops for your farm size.
           </p>
         </header>
 
@@ -157,6 +158,7 @@ const Index = () => {
                 <div className="transition-all duration-500 transform hover:scale-[1.01]">
                   <CropSelector 
                     totalAcres={acres} 
+                    cropAllocations={cropAllocations}
                     onCropAllocationChange={handleCropAllocationChange} 
                   />
                 </div>

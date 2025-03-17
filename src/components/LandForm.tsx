@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,7 @@ const LandForm = ({ onSubmit }: LandFormProps) => {
       // Clear any existing timeout
       const timeoutId = setTimeout(() => {
         onSubmit(acreValue);
+        toast.success(`AI is analyzing optimal crop allocations for ${acreValue} acres`);
       }, 800); // Slight delay to allow user to finish typing
       
       return () => clearTimeout(timeoutId);

@@ -1,15 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CropType, CropAllocation } from "@/types/farm";
-import { Wheat, Sprout, Leaf, CircleDashed } from 'lucide-react';
+import { Wheat, Sprout, Leaf, CircleDashed, Info } from 'lucide-react';
 
 interface CropSelectorProps {
   totalAcres: number;
+  cropAllocations: CropAllocation[];
   onCropAllocationChange: (allocations: CropAllocation[]) => void;
 }
 
@@ -50,14 +51,13 @@ const availableCrops: {
   },
 ];
 
-const CropSelector = ({ totalAcres, onCropAllocationChange }: CropSelectorProps) => {
-  const [allocations, setAllocations] = useState<CropAllocation[]>(
-    availableCrops.map(crop => ({ 
-      crop: crop.type, 
-      percentage: 0,
-      acres: 0 
-    }))
-  );
+const CropSelector = ({ totalAcres, cropAllocations, onCropAllocationChange }: CropSelectorProps) => {
+  const [allocations, setAllocations] = useState<CropAllocation[]>(cropAllocations);
+  
+  // Update local state when props change
+  useEffect(() => {
+    setAllocations(cropAllocations);
+  }, [cropAllocations]);
 
   const totalPercentage = allocations.reduce((sum, item) => sum + item.percentage, 0);
   const remainingPercentage = 100 - totalPercentage;
@@ -97,22 +97,20 @@ const CropSelector = ({ totalAcres, onCropAllocationChange }: CropSelectorProps)
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 pointer-events-none" aria-hidden="true" />
       <CardHeader className="relative pb-3">
         <CardTitle className="flex justify-between items-center">
-          <span className="text-xl font-bold">Crop Allocation</span>
+          <span className="text-xl font-bold">AI Crop Recommendation</span>
           <Badge 
-            variant={remainingPercentage > 0 ? "secondary" : "default"}
-            className={`px-3 py-1 text-sm font-medium ${
-              remainingPercentage > 0 
-                ? 'bg-secondary/80 text-secondary-foreground' 
-                : 'bg-primary/80 text-primary-foreground'
-            }`}
+            variant="outline"
+            className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary"
           >
-            {remainingPercentage > 0 
-              ? `${remainingPercentage}% Unallocated` 
-              : "100% Allocated"}
+            <Info className="h-3.5 w-3.5 mr-1" />
+            AI Optimized
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="relative space-y-5">
+        <div className="text-sm text-muted-foreground mb-2">
+          Based on your land size, our AI recommends the following crop allocation:
+        </div>
         {allocations.map((allocation, index) => (
           <div key={index} className="relative space-y-2">
             <div className="absolute inset-0 bg-gradient-to-r pointer-events-none opacity-20 rounded-lg -m-1 p-1" 
@@ -132,16 +130,16 @@ const CropSelector = ({ totalAcres, onCropAllocationChange }: CropSelectorProps)
               step={1}
               onValueChange={(value) => handleSliderChange(index, value)}
               className="py-1"
+              disabled={true} // Disable manual adjustment
             />
           </div>
         ))}
-        <Button 
-          onClick={handleApply} 
-          className="w-full mt-6 h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all shadow-md hover:shadow-lg"
-          disabled={remainingPercentage === 100}
-        >
-          Apply to Land
-        </Button>
+        <div className="bg-muted/30 rounded-lg p-3 text-sm">
+          <p className="flex items-center text-muted-foreground">
+            <Info className="h-4 w-4 mr-2 text-primary" />
+            This AI recommendation is optimized for your {totalAcres} acres of land
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

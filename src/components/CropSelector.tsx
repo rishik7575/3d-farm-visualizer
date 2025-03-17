@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CropType, CropAllocation } from "@/types/farm";
-import { Wheat, Seedling, Leaf, CircleDashed } from 'lucide-react';
+import { Wheat, Sprout, Leaf, CircleDashed } from 'lucide-react';
 
 interface CropSelectorProps {
   totalAcres: number;
@@ -31,7 +31,7 @@ const availableCrops: {
     type: 'corn', 
     name: 'Corn', 
     color: 'bg-crop-corn text-black',
-    icon: <Seedling className="h-4 w-4" />,
+    icon: <Sprout className="h-4 w-4" />,
     bgClass: 'from-crop-corn/30 to-crop-corn/10'
   },
   { 

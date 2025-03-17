@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,27 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				soil: {
+					DEFAULT: '#8B4513',
+					light: '#A0522D',
+					dark: '#654321',
+				},
+				foliage: {
+					DEFAULT: '#228B22',
+					light: '#32CD32',
+					dark: '#006400',
+				},
+				sky: {
+					DEFAULT: '#87CEEB',
+					light: '#B0E0E6',
+					dark: '#4682B4',
+				},
+				crop: {
+					wheat: '#F5DEB3',
+					corn: '#FFD700',
+					soybean: '#6B8E23',
+					cotton: '#F5F5F5',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,11 +106,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'grow': {
+					'0%': { transform: 'scaleY(0)', transformOrigin: 'bottom' },
+					'100%': { transform: 'scaleY(1)', transformOrigin: 'bottom' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'grow': 'grow 3s ease-out forwards'
 			}
 		}
 	},

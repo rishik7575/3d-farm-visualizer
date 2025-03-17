@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { CropAllocation } from '@/types/farm';
@@ -760,4 +761,329 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     
     // Add several leaves at different heights
     for (let i = 0; i < 4; i++) {
-      const angle = i *
+      const angle = i * (Math.PI / 2); // Rotate by 90 degrees for each leaf
+      const height = 0.4 + i * 0.4; // Space leaves vertically
+      addLeaf(height, angle, 1.2, 0.3);
+    }
+    
+    // Add corn ears
+    if (Math.random() > 0.3) { // Not all plants have visible ears
+      const earGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.8, 8);
+      const earMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xFFD700,
+        roughness: 0.6
+      });
+      const ear = new THREE.Mesh(earGeometry, earMaterial);
+      
+      // Position ear on the side of the stalk
+      const earAngle = Math.random() * Math.PI * 2;
+      ear.position.set(
+        Math.cos(earAngle) * 0.2,
+        1.2,
+        Math.sin(earAngle) * 0.2
+      );
+      ear.rotation.z = Math.PI / 2; // Horizontal ear
+      ear.rotation.y = earAngle;
+      
+      plant.add(ear);
+    }
+    
+    return plant;
+  };
+  
+  const createAdvancedSoybeanPlant = (): THREE.Object3D => {
+    const plant = new THREE.Group();
+    
+    // Main stem
+    const stemGeometry = new THREE.CylinderGeometry(0.02, 0.03, 0.6, 8);
+    const stemMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x8B7355,
+      roughness: 0.8
+    });
+    const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+    stem.position.y = 0.3;
+    plant.add(stem);
+    
+    // Add soybean pods and leaves
+    const branchCount = Math.floor(3 + Math.random() * 3);
+    
+    for (let i = 0; i < branchCount; i++) {
+      // Add a branch
+      const branchHeight = 0.1 + (i / branchCount) * 0.5;
+      const branchAngle = (i / branchCount) * Math.PI * 2;
+      const branchLength = 0.15 + Math.random() * 0.1;
+      
+      const branchGeometry = new THREE.CylinderGeometry(0.01, 0.01, branchLength, 4);
+      const branchMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+      const branch = new THREE.Mesh(branchGeometry, branchMaterial);
+      
+      branch.position.y = branchHeight;
+      branch.position.x = 0.02 * Math.cos(branchAngle);
+      branch.position.z = 0.02 * Math.sin(branchAngle);
+      
+      branch.rotation.z = Math.PI / 2 - branchAngle;
+      branch.rotation.y = branchAngle;
+      
+      plant.add(branch);
+      
+      // Add pods to branch
+      const podCount = Math.floor(1 + Math.random() * 2);
+      for (let j = 0; j < podCount; j++) {
+        const podGeometry = new THREE.SphereGeometry(0.02, 8, 8);
+        podGeometry.scale(1, 2, 0.7); // Elongate the pod
+        
+        const podMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0x6B8E23,
+          roughness: 0.7
+        });
+        
+        const pod = new THREE.Mesh(podGeometry, podMaterial);
+        
+        // Position pod along branch
+        const podOffset = (j + 1) / (podCount + 1);
+        pod.position.x = branch.position.x + Math.cos(branchAngle) * branchLength * podOffset;
+        pod.position.y = branch.position.y;
+        pod.position.z = branch.position.z + Math.sin(branchAngle) * branchLength * podOffset;
+        
+        // Random pod rotation
+        pod.rotation.x = Math.random() * Math.PI;
+        pod.rotation.y = Math.random() * Math.PI;
+        pod.rotation.z = Math.random() * Math.PI;
+        
+        plant.add(pod);
+      }
+      
+      // Add leaf at branch end
+      const leafGeometry = new THREE.CircleGeometry(0.07, 8);
+      const leafMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x6B8E23,
+        side: THREE.DoubleSide,
+        roughness: 0.8
+      });
+      
+      const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+      
+      leaf.position.x = branch.position.x + Math.cos(branchAngle) * branchLength;
+      leaf.position.y = branch.position.y;
+      leaf.position.z = branch.position.z + Math.sin(branchAngle) * branchLength;
+      
+      leaf.rotation.y = branchAngle;
+      leaf.rotation.x = Math.PI / 4;
+      
+      plant.add(leaf);
+    }
+    
+    return plant;
+  };
+  
+  const createAdvancedCottonPlant = (): THREE.Object3D => {
+    const plant = new THREE.Group();
+    
+    // Main stem
+    const stemGeometry = new THREE.CylinderGeometry(0.03, 0.04, 0.9, 8);
+    const stemMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xA0522D,
+      roughness: 0.8
+    });
+    const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+    stem.position.y = 0.45;
+    plant.add(stem);
+    
+    // Add branches
+    const branchCount = Math.floor(3 + Math.random() * 3);
+    
+    for (let i = 0; i < branchCount; i++) {
+      // Add a branch
+      const branchHeight = 0.3 + (i / branchCount) * 0.6;
+      const branchAngle = (i / branchCount) * Math.PI * 2;
+      const branchLength = 0.25 + Math.random() * 0.1;
+      
+      const branchGeometry = new THREE.CylinderGeometry(0.015, 0.01, branchLength, 4);
+      const branch = new THREE.Mesh(branchGeometry, stemMaterial);
+      
+      branch.position.y = branchHeight;
+      branch.position.x = 0.03 * Math.cos(branchAngle);
+      branch.position.z = 0.03 * Math.sin(branchAngle);
+      
+      branch.rotation.z = Math.PI / 2 - 0.3 - branchAngle; // Angle branches upward
+      branch.rotation.y = branchAngle;
+      
+      plant.add(branch);
+      
+      // Add cotton boll
+      if (Math.random() > 0.4) {
+        const bollGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        const bollMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0xFFFFFF,
+          roughness: 0.4,
+          metalness: 0.1
+        });
+        
+        const boll = new THREE.Mesh(bollGeometry, bollMaterial);
+        
+        // Position at end of branch with slight offset
+        const tipX = branch.position.x + Math.cos(branchAngle) * branchLength * 0.9;
+        const tipZ = branch.position.z + Math.sin(branchAngle) * branchLength * 0.9;
+        const tipY = branch.position.y + branchLength * 0.3; // Account for upward angle
+        
+        boll.position.set(tipX, tipY, tipZ);
+        
+        plant.add(boll);
+      }
+      
+      // Add leaf
+      const leafGeometry = new THREE.PlaneGeometry(0.15, 0.15, 2, 2);
+      const leafMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x355E3B,
+        side: THREE.DoubleSide,
+        roughness: 0.7
+      });
+      
+      const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+      
+      // Position leaf halfway along branch
+      leaf.position.x = branch.position.x + Math.cos(branchAngle) * branchLength * 0.5;
+      leaf.position.y = branch.position.y + branchLength * 0.15; // Account for upward angle
+      leaf.position.z = branch.position.z + Math.sin(branchAngle) * branchLength * 0.5;
+      
+      // Set leaf orientation
+      leaf.rotation.y = branchAngle + Math.PI / 4;
+      leaf.rotation.x = Math.PI / 3;
+      
+      plant.add(leaf);
+    }
+    
+    return plant;
+  };
+  
+  // Animate crop growth
+  const growCrops = () => {
+    isAnimatingRef.current = true;
+    
+    const targetScale = 1;
+    const growDuration = 2000; // Duration in ms
+    const startTime = Date.now();
+    
+    // Find all crop groups to animate
+    const cropGroups = cropObjectsRef.current.filter(obj => obj.name.startsWith('crops-'));
+    
+    // Animate plant growth
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / growDuration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
+      
+      // Update all crop groups
+      cropGroups.forEach(group => {
+        group.children.forEach(plant => {
+          // Grow plant from ground up
+          const baseScale = (plant as any).scale.x; // Original x/z scale
+          plant.scale.set(baseScale, baseScale * easedProgress * targetScale, baseScale);
+          
+          // Apply sway animation if growth is complete
+          if (progress === 1 && (plant as any).animation) {
+            const { swaySpeed, swayAmount, swayOffset } = (plant as any).animation;
+            const time = Date.now() * 0.001;
+            plant.rotation.z = Math.sin(time * swaySpeed + swayOffset) * swayAmount;
+          }
+        });
+      });
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Growth animation complete, continue subtle sway
+        isAnimatingRef.current = false;
+        animateSway();
+      }
+    };
+    
+    // Continue swaying animation after growth
+    const animateSway = () => {
+      if (isAnimatingRef.current) return;
+      
+      cropGroups.forEach(group => {
+        group.children.forEach(plant => {
+          if ((plant as any).animation) {
+            const { swaySpeed, swayAmount, swayOffset } = (plant as any).animation;
+            const time = Date.now() * 0.001;
+            plant.rotation.z = Math.sin(time * swaySpeed + swayOffset) * swayAmount;
+          }
+        });
+      });
+      
+      requestAnimationFrame(animateSway);
+    };
+    
+    animate();
+  };
+  
+  // Toggle fullscreen view
+  const toggleFullscreen = () => {
+    const newState = !isFullscreen;
+    setIsFullscreen(newState);
+    
+    if (containerRef.current) {
+      if (newState) {
+        if (containerRef.current.requestFullscreen) {
+          containerRef.current.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  };
+  
+  // Toggle camera angle
+  const toggleCameraAngle = () => {
+    setCameraAngle(prev => {
+      switch (prev) {
+        case 'angled': return 'top';
+        case 'top': return 'side';
+        case 'side': return 'angled';
+        default: return 'angled';
+      }
+    });
+  };
+
+  return (
+    <div className="relative w-full h-[500px] rounded-lg overflow-hidden border border-primary/20 shadow-xl">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-lg font-medium">Loading 3D Farm Visualization...</p>
+          </div>
+        </div>
+      )}
+      
+      <div className="absolute top-3 right-3 flex gap-2 z-10">
+        <Button
+          size="icon"
+          variant="outline"
+          className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full w-10 h-10"
+          onClick={toggleCameraAngle}
+        >
+          <RefreshCw className="h-5 w-5" />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline" 
+          className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full w-10 h-10"
+          onClick={toggleFullscreen}
+        >
+          <Maximize2 className="h-5 w-5" />
+        </Button>
+      </div>
+      
+      <div 
+        ref={containerRef} 
+        className="w-full h-full"
+      />
+    </div>
+  );
+};
+
+export default FarmScene;

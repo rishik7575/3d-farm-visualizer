@@ -31,8 +31,24 @@ const LandForm = ({ onSubmit }: LandFormProps) => {
     onSubmit(acreValue);
   };
 
+  // Auto-submit after delay when valid value is entered
+  const handleAcreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAcres(value);
+    
+    const acreValue = parseFloat(value);
+    if (!isNaN(acreValue) && acreValue > 0) {
+      // Clear any existing timeout
+      const timeoutId = setTimeout(() => {
+        onSubmit(acreValue);
+      }, 800); // Slight delay to allow user to finish typing
+      
+      return () => clearTimeout(timeoutId);
+    }
+  };
+
   return (
-    <Card className="w-full max-w-md overflow-hidden border-2 border-primary/30 shadow-xl bg-background/95 backdrop-blur-sm">
+    <Card className="w-full max-w-md overflow-hidden border-2 border-primary/30 shadow-xl bg-background/95 backdrop-blur-sm transform transition-all duration-500 hover:scale-[1.01]">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 pointer-events-none" aria-hidden="true" />
       <CardHeader className="relative space-y-1 pb-4">
         <div className="flex items-center justify-between">
@@ -61,7 +77,7 @@ const LandForm = ({ onSubmit }: LandFormProps) => {
                 min="0.1"
                 step="0.1"
                 value={acres}
-                onChange={(e) => setAcres(e.target.value)}
+                onChange={handleAcreChange}
                 className="h-12 text-lg border-2 transition-all focus:ring-2 focus:ring-primary/40 focus:border-primary pl-4 pr-12"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">

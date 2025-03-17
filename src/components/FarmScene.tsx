@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { CropAllocation } from '@/types/farm';
@@ -22,14 +21,14 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [cameraAngle, setCameraAngle] = useState<'top' | 'side' | 'angled'>('angled');
 
-  // Initialize Three.js scene
+  // Initialize Three.js scene with enhanced visuals
   useEffect(() => {
     if (!containerRef.current) return;
 
     // Create scene
     const scene = new THREE.Scene();
     
-    // Create sky gradient background
+    // Create enhanced sky gradient background
     const vertexShader = `
       varying vec3 vWorldPosition;
       void main() {
@@ -52,10 +51,10 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     `;
     
     const uniforms = {
-      topColor: { value: new THREE.Color(0x77bbff) },
-      bottomColor: { value: new THREE.Color(0xffffff) },
+      topColor: { value: new THREE.Color(0x6CA6CD) }, // Enhanced sky blue
+      bottomColor: { value: new THREE.Color(0xF8F9FA) }, // Cleaner white
       offset: { value: 33 },
-      exponent: { value: 0.6 }
+      exponent: { value: 0.7 } // More pronounced gradient
     };
     
     const skyGeo = new THREE.SphereGeometry(500, 32, 15);
@@ -71,34 +70,35 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     
     sceneRef.current = scene;
 
-    // Create camera
+    // Create camera with better default position
     const aspectRatio = containerRef.current.clientWidth / containerRef.current.clientHeight;
-    const camera = new THREE.PerspectiveCamera(60, aspectRatio, 0.1, 1000);
-    camera.position.set(0, 10, 20);
+    const camera = new THREE.PerspectiveCamera(65, aspectRatio, 0.1, 1000); // Wider FOV
+    camera.position.set(5, 15, 25); // Better starting position
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    // Create renderer with antialiasing and high precision
+    // Create enhanced renderer with better quality settings
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       logarithmicDepthBuffer: true,
-      precision: 'highp'
+      precision: 'highp',
+      powerPreference: 'high-performance'
     });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.3; // Slightly brighter
     renderer.outputEncoding = THREE.sRGBEncoding;
     containerRef.current.appendChild(renderer.domElement);
     renderer.domElement.classList.add('three-canvas');
     rendererRef.current = renderer;
 
-    // Add lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Add enhanced lighting setup
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Stronger ambient
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const directionalLight = new THREE.DirectionalLight(0xfffaf0, 0.9); // Warm sunlight
     directionalLight.position.set(10, 15, 10);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
@@ -109,14 +109,15 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     directionalLight.shadow.camera.right = 20;
     directionalLight.shadow.camera.top = 20;
     directionalLight.shadow.camera.bottom = -20;
+    directionalLight.shadow.bias = -0.0005; // Reduce shadow acne
     scene.add(directionalLight);
     
-    // Add subtle hemisphere light for better color
-    const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x3D5E3D, 0.4);
+    // Add subtle hemisphere light for better color and ambient occlusion effect
+    const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x3D5E3D, 0.5);
     scene.add(hemisphereLight);
 
     // Add more realistic environment
-    addEnvironment(scene);
+    addEnhancedEnvironment(scene);
 
     // Handle window resize
     const handleResize = () => {
@@ -133,11 +134,18 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
 
     window.addEventListener('resize', handleResize);
 
-    // Animation loop
+    // Animation loop with subtle camera movement
     const animate = () => {
       requestAnimationFrame(animate);
       
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        // Add subtle camera motion
+        if (!isAnimatingRef.current && cameraRef.current) {
+          const time = Date.now() * 0.0001;
+          cameraRef.current.position.y += Math.sin(time) * 0.01;
+          cameraRef.current.lookAt(0, 0, 0);
+        }
+        
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     };
@@ -156,28 +164,43 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     };
   }, []);
 
-  // Add realistic environment elements
-  const addEnvironment = (scene: THREE.Scene) => {
-    // Add distant mountains
-    const mountainGeometry = new THREE.PlaneGeometry(500, 100);
-    const mountainTexture = new THREE.TextureLoader().load('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1000&q=80');
+  // Add enhanced realistic environment elements
+  const addEnhancedEnvironment = (scene: THREE.Scene) => {
+    // Add distant mountains with better texture
+    const mountainGeometry = new THREE.PlaneGeometry(800, 150);
+    const mountainTexture = new THREE.TextureLoader().load('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80');
+    mountainTexture.wrapS = THREE.RepeatWrapping;
+    mountainTexture.wrapT = THREE.RepeatWrapping;
+    mountainTexture.repeat.set(1, 1);
+    
     const mountainMaterial = new THREE.MeshBasicMaterial({ 
       map: mountainTexture,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.9,
       depthWrite: false
     });
     
     const mountains = new THREE.Mesh(mountainGeometry, mountainMaterial);
-    mountains.position.set(0, 20, -200);
+    mountains.position.set(0, 40, -300);
     scene.add(mountains);
     
-    // Add ground plane extending beyond the farm
-    const groundSize = 1000;
-    const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
+    // Add ground plane with better texture
+    const groundSize = 1500;
+    const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 64, 64);
+    
+    // Load ground texture
+    const textureLoader = new THREE.TextureLoader();
+    const grassTexture = textureLoader.load('https://images.unsplash.com/photo-1579546929662-711aa81148cf?auto=format&fit=crop&w=800&q=80');
+    grassTexture.wrapS = THREE.RepeatWrapping;
+    grassTexture.wrapT = THREE.RepeatWrapping;
+    grassTexture.repeat.set(50, 50);
+    
+    // Richer ground material
     const groundMaterial = new THREE.MeshStandardMaterial({ 
+      map: grassTexture,
       color: 0x3D5E3D,
-      roughness: 1,
+      roughness: 0.9,
+      metalness: 0.1,
     });
     
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -186,42 +209,228 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     ground.receiveShadow = true;
     scene.add(ground);
     
-    // Add distant trees
-    addDistantTrees(scene);
+    // Add distant trees and other landscape features
+    addEnhancedLandscape(scene);
+    
+    // Add atmospheric fog for depth
+    scene.fog = new THREE.FogExp2(0xE6F0FF, 0.0025);
   };
   
-  // Add trees to the distant landscape
-  const addDistantTrees = (scene: THREE.Scene) => {
-    const treePositions = [];
-    const radius = 60;
-    const count = 30;
+  // Add enhanced landscape features
+  const addEnhancedLandscape = (scene: THREE.Scene) => {
+    // Add trees in a natural distribution
+    addNaturalTreeDistribution(scene);
     
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      const x = Math.cos(angle) * radius + (Math.random() * 20 - 10);
-      const z = Math.sin(angle) * radius + (Math.random() * 20 - 10);
+    // Add a small pond or water feature
+    addWaterFeature(scene);
+    
+    // Add distant rolling hills
+    addRollingHills(scene);
+  };
+  
+  // Add trees distributed in a more natural pattern
+  const addNaturalTreeDistribution = (scene: THREE.Scene) => {
+    const treePositions = [];
+    const treeClusters = 5; // Number of tree clusters
+    const treesPerCluster = 8; // Average trees per cluster
+    
+    // Create natural clusters of trees
+    for (let cluster = 0; cluster < treeClusters; cluster++) {
+      // Cluster center
+      const clusterRadius = 80 + Math.random() * 40;
+      const clusterAngle = (cluster / treeClusters) * Math.PI * 2;
+      const clusterX = Math.cos(clusterAngle) * clusterRadius;
+      const clusterZ = Math.sin(clusterAngle) * clusterRadius;
+      
+      // Trees in this cluster
+      const actualTreesInCluster = Math.floor(treesPerCluster + (Math.random() * 5 - 2));
+      
+      for (let i = 0; i < actualTreesInCluster; i++) {
+        const spread = 15 + Math.random() * 10;
+        const angle = Math.random() * Math.PI * 2;
+        const x = clusterX + Math.cos(angle) * spread * Math.random();
+        const z = clusterZ + Math.sin(angle) * spread * Math.random();
+        treePositions.push({ x, z });
+      }
+    }
+    
+    // Add some individual trees in random locations
+    for (let i = 0; i < 15; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 40 + Math.random() * 100;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
       treePositions.push({ x, z });
     }
     
+    // Create the trees
     treePositions.forEach(pos => {
-      const treeHeight = 5 + Math.random() * 5;
+      const treeType = Math.random() > 0.7 ? 'pine' : 'deciduous';
+      const treeHeight = 5 + Math.random() * 7;
       
-      // Tree trunk
-      const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.8, treeHeight, 8);
-      const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-      const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-      trunk.position.set(pos.x, treeHeight / 2 - 0.5, pos.z);
-      trunk.castShadow = true;
-      scene.add(trunk);
-      
-      // Tree foliage
-      const foliageGeometry = new THREE.ConeGeometry(3, 5, 8);
-      const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x004D00 });
-      const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
-      foliage.position.set(pos.x, treeHeight + 1, pos.z);
-      foliage.castShadow = true;
-      scene.add(foliage);
+      if (treeType === 'pine') {
+        createPineTree(scene, pos.x, pos.z, treeHeight);
+      } else {
+        createDeciduousTree(scene, pos.x, pos.z, treeHeight);
+      }
     });
+  };
+  
+  // Create a pine tree
+  const createPineTree = (scene: THREE.Scene, x: number, z: number, height: number) => {
+    // Tree trunk
+    const trunkGeometry = new THREE.CylinderGeometry(0.4, 0.6, height, 8);
+    const trunkMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x8B4513,
+      roughness: 0.9,
+      metalness: 0.1,
+    });
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.position.set(x, height / 2 - 0.5, z);
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    scene.add(trunk);
+    
+    // Multiple layers of foliage for pine tree
+    const foliageLayers = Math.floor(Math.random() * 2) + 3;
+    const layerStep = height * 0.6 / foliageLayers;
+    
+    for (let i = 0; i < foliageLayers; i++) {
+      const layerSize = 3 - (i * (2.0 / foliageLayers));
+      const layerHeight = 2.5 - (i * (1.0 / foliageLayers));
+      
+      const foliageGeometry = new THREE.ConeGeometry(layerSize, layerHeight, 8);
+      const foliageMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x004D00,
+        roughness: 0.8,
+        metalness: 0.1,
+      });
+      const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+      foliage.position.set(
+        x, 
+        trunk.position.y + height * 0.4 + (i * layerStep),
+        z
+      );
+      foliage.castShadow = true;
+      foliage.receiveShadow = true;
+      scene.add(foliage);
+    }
+  };
+  
+  // Create a deciduous tree
+  const createDeciduousTree = (scene: THREE.Scene, x: number, z: number, height: number) => {
+    // Tree trunk with slight random tilt
+    const tiltX = (Math.random() - 0.5) * 0.2;
+    const tiltZ = (Math.random() - 0.5) * 0.2;
+    
+    const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.7, height, 8);
+    const trunkMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x8B5A2B,
+      roughness: 0.9,
+      metalness: 0.1,
+    });
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.position.set(x, height / 2 - 0.5, z);
+    trunk.rotation.x = tiltX;
+    trunk.rotation.z = tiltZ;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    scene.add(trunk);
+    
+    // Foliage as a sphere or ellipsoid
+    const foliageWidth = 2.5 + Math.random() * 2;
+    const foliageHeight = 3 + Math.random() * 2;
+    
+    const foliageGeometry = new THREE.SphereGeometry(foliageWidth, 8, 8);
+    // Flatten slightly to make it more ellipsoid
+    foliageGeometry.scale(1, foliageHeight / foliageWidth, 1);
+    
+    // Randomize color slightly
+    const colorVariance = Math.random() * 0.1;
+    const foliageMaterial = new THREE.MeshStandardMaterial({ 
+      color: new THREE.Color(0.1 + colorVariance, 0.5 - colorVariance, 0.1),
+      roughness: 0.8,
+      metalness: 0.1,
+    });
+    
+    const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+    foliage.position.set(
+      x + tiltZ * height, // Adjust for trunk tilt
+      height - 1 + foliageHeight * 0.5, 
+      z + tiltX * height
+    );
+    foliage.castShadow = true;
+    foliage.receiveShadow = true;
+    scene.add(foliage);
+  };
+  
+  // Add a water feature to the landscape
+  const addWaterFeature = (scene: THREE.Scene) => {
+    // Create a small pond
+    const pondRadius = 20;
+    const pondGeometry = new THREE.CircleGeometry(pondRadius, 32);
+    
+    // Use MeshStandardMaterial with blue color and water-like properties
+    const pondMaterial = new THREE.MeshStandardMaterial({
+      color: 0x3D85C6,
+      metalness: 0.9,
+      roughness: 0.1,
+    });
+    
+    const pond = new THREE.Mesh(pondGeometry, pondMaterial);
+    pond.rotation.x = -Math.PI / 2;
+    pond.position.set(-60, -0.3, 40); // Position off to one side
+    scene.add(pond);
+    
+    // Add slight animation to water
+    const animate = () => {
+      if (pond && !isAnimatingRef.current) {
+        const time = Date.now() * 0.001;
+        pondMaterial.color.r = 0.24 + Math.sin(time) * 0.01;
+        pondMaterial.color.g = 0.52 + Math.sin(time * 1.3) * 0.01;
+      }
+      requestAnimationFrame(animate);
+    };
+    
+    animate();
+  };
+  
+  // Add rolling hills to the distant landscape
+  const addRollingHills = (scene: THREE.Scene) => {
+    const hillCount = 3;
+    const hillColors = [0x4A7834, 0x3E6B29, 0x5D8C46];
+    
+    for (let i = 0; i < hillCount; i++) {
+      const distance = 150 + i * 50;
+      const width = 300 + i * 100;
+      const height = 30 + i * 10;
+      
+      // Create a curved hill using a box with a curved top
+      const hillGeometry = new THREE.PlaneGeometry(width, height, 32, 8);
+      
+      // Shape the hill with a sine wave
+      const vertices = hillGeometry.attributes.position.array;
+      for (let j = 0; j < vertices.length; j += 3) {
+        const x = vertices[j];
+        const amplitude = 5 + Math.random() * 3;
+        const frequency = 0.02 + Math.random() * 0.01;
+        vertices[j + 1] += Math.sin(x * frequency) * amplitude * (1 - Math.abs(x / width));
+      }
+      
+      hillGeometry.computeVertexNormals();
+      
+      const hillMaterial = new THREE.MeshStandardMaterial({
+        color: hillColors[i % hillColors.length],
+        roughness: 0.9,
+        metalness: 0.1,
+        side: THREE.DoubleSide,
+      });
+      
+      const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+      hill.position.set(0, height / 2, -distance);
+      hill.receiveShadow = true;
+      scene.add(hill);
+    }
   };
 
   // Create or update the land based on the acres value
@@ -361,14 +570,29 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
 
   }, [acres, cropAllocations]);
 
-  // Function to get crop color
+  // Function to get enhanced crop color with variations
   const getCropColor = (cropType: string): number => {
+    // Base colors with slight randomization for natural variation
+    const randomFactor = 0.08; // Color variance factor
+    const randomize = (color: THREE.Color): number => {
+      const variance = (Math.random() * 2 - 1) * randomFactor;
+      color.r = Math.max(0, Math.min(1, color.r + variance));
+      color.g = Math.max(0, Math.min(1, color.g + variance));
+      color.b = Math.max(0, Math.min(1, color.b + variance));
+      return color.getHex();
+    };
+    
     switch (cropType) {
-      case 'wheat': return 0xF5DEB3;
-      case 'corn': return 0xFFD700;
-      case 'soybean': return 0x6B8E23;
-      case 'cotton': return 0xF5F5F5;
-      default: return 0x00FF00;
+      case 'wheat': 
+        return randomize(new THREE.Color(0xF5DEB3));
+      case 'corn': 
+        return randomize(new THREE.Color(0xFFD700));
+      case 'soybean': 
+        return randomize(new THREE.Color(0x6B8E23));
+      case 'cotton': 
+        return randomize(new THREE.Color(0xF5F5F5));
+      default: 
+        return randomize(new THREE.Color(0x00FF00));
     }
   };
 
@@ -536,362 +760,4 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     
     // Add several leaves at different heights
     for (let i = 0; i < 4; i++) {
-      const angle = i * (Math.PI / 2);
-      addLeaf(0.6 + i * 0.4, angle, 1.2, 0.2);
-    }
-    
-    // Corn cob
-    const cornGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.5, 10);
-    const cornMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0xFFD700,
-      roughness: 0.5
-    });
-    const corn = new THREE.Mesh(cornGeometry, cornMaterial);
-    corn.rotation.x = Math.PI / 2;
-    corn.position.y = 1.2;
-    corn.position.z = 0.2;
-    
-    plant.add(corn);
-    
-    // Corn silk
-    const silkGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.3, 6);
-    const silkMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFAFA });
-    
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      const radialDist = 0.05;
-      
-      const silk = new THREE.Mesh(silkGeometry, silkMaterial);
-      silk.position.set(
-        corn.position.x,
-        corn.position.y,
-        corn.position.z + 0.25 + 0.05
-      );
-      
-      // Bend silks outward
-      silk.rotation.x = Math.PI / 2;
-      silk.rotation.z = (Math.random() - 0.5) * 0.5;
-      
-      plant.add(silk);
-    }
-    
-    return plant;
-  };
-  
-  const createAdvancedSoybeanPlant = (): THREE.Object3D => {
-    const plant = new THREE.Group();
-    
-    // Main stem
-    const stemGeometry = new THREE.CylinderGeometry(0.03, 0.05, 0.7, 8);
-    const stemMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x8FBC8F,
-      roughness: 0.6 
-    });
-    const stem = new THREE.Mesh(stemGeometry, stemMaterial);
-    stem.position.y = 0.35;
-    plant.add(stem);
-    
-    // Add branches
-    const addBranch = (height: number, angle: number, length: number) => {
-      const branchGeometry = new THREE.CylinderGeometry(0.02, 0.02, length, 6);
-      const branch = new THREE.Mesh(branchGeometry, stemMaterial);
-      
-      // Position at the stem
-      branch.position.y = height;
-      
-      // Rotate branch outward
-      branch.rotation.z = Math.PI / 2 - Math.PI / 8;
-      branch.rotation.y = angle;
-      
-      // Move branch endpoint away from center
-      branch.position.x = Math.cos(angle) * 0.1;
-      branch.position.z = Math.sin(angle) * 0.1;
-      
-      // Add small soybean pods to the branch
-      const podsCount = Math.floor(Math.random() * 3) + 1;
-      for (let i = 0; i < podsCount; i++) {
-        const podGeometry = new THREE.SphereGeometry(0.04, 8, 8);
-        podGeometry.scale(1, 0.5, 0.6);
-        
-        const podMaterial = new THREE.MeshStandardMaterial({ 
-          color: 0x6B8E23,
-          roughness: 0.7
-        });
-        
-        const pod = new THREE.Mesh(podGeometry, podMaterial);
-        pod.position.set(
-          Math.cos(angle) * (0.2 + i * 0.1),
-          height + (i * 0.05) - 0.1,
-          Math.sin(angle) * (0.2 + i * 0.1)
-        );
-        
-        plant.add(pod);
-      }
-      
-      plant.add(branch);
-    };
-    
-    // Add 4-6 branches at different heights and angles
-    const branchCount = Math.floor(Math.random() * 3) + 4;
-    for (let i = 0; i < branchCount; i++) {
-      const angle = (i / branchCount) * Math.PI * 2;
-      const height = 0.2 + i * (0.5 / branchCount);
-      addBranch(height, angle, 0.3);
-    }
-    
-    // Add leaves
-    for (let i = 0; i < 5; i++) {
-      const leafGeometry = new THREE.CircleGeometry(0.1, 8);
-      const leafMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x6B8E23,
-        side: THREE.DoubleSide,
-        roughness: 0.8
-      });
-      
-      const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
-      
-      const angle = (i / 5) * Math.PI * 2;
-      const height = 0.1 + Math.random() * 0.6;
-      
-      leaf.position.set(
-        Math.cos(angle) * 0.2,
-        height,
-        Math.sin(angle) * 0.2
-      );
-      
-      leaf.rotation.y = angle;
-      leaf.rotation.x = Math.PI / 4;
-      
-      plant.add(leaf);
-    }
-    
-    return plant;
-  };
-  
-  const createAdvancedCottonPlant = (): THREE.Object3D => {
-    const plant = new THREE.Group();
-    
-    // Main stem
-    const stemGeometry = new THREE.CylinderGeometry(0.04, 0.05, 1.2, 8);
-    const stemMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x8B4513,
-      roughness: 0.8
-    });
-    const stem = new THREE.Mesh(stemGeometry, stemMaterial);
-    stem.position.y = 0.6;
-    plant.add(stem);
-    
-    // Add branches
-    for (let i = 0; i < 3; i++) {
-      const branchGeometry = new THREE.CylinderGeometry(0.025, 0.025, 0.4, 6);
-      const branch = new THREE.Mesh(branchGeometry, stemMaterial);
-      
-      const angle = (i / 3) * Math.PI * 2;
-      const height = 0.4 + i * 0.3;
-      
-      branch.position.y = height;
-      branch.rotation.z = Math.PI / 2 - Math.PI / 6;
-      branch.rotation.y = angle;
-      
-      branch.position.x = Math.cos(angle) * 0.1;
-      branch.position.z = Math.sin(angle) * 0.1;
-      
-      plant.add(branch);
-      
-      // Add cotton bolls
-      const bolls = Math.floor(Math.random() * 2) + 1;
-      
-      for (let j = 0; j < bolls; j++) {
-        const cottonGeometry = new THREE.SphereGeometry(0.1, 12, 12);
-        const cottonMaterial = new THREE.MeshStandardMaterial({ 
-          color: 0xF5F5F5,
-          roughness: 0.2
-        });
-        
-        const cotton = new THREE.Mesh(cottonGeometry, cottonMaterial);
-        
-        cotton.position.set(
-          Math.cos(angle) * (0.3 + j * 0.1),
-          height,
-          Math.sin(angle) * (0.3 + j * 0.1)
-        );
-        
-        plant.add(cotton);
-      }
-    }
-    
-    // Add leaves
-    for (let i = 0; i < 5; i++) {
-      const leafGeometry = new THREE.PlaneGeometry(0.3, 0.3);
-      const leafMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x228B22,
-        side: THREE.DoubleSide,
-        roughness: 0.7
-      });
-      
-      const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
-      
-      const angle = (i / 5) * Math.PI * 2;
-      const height = 0.2 + i * 0.2;
-      
-      leaf.position.set(
-        Math.cos(angle) * 0.15,
-        height,
-        Math.sin(angle) * 0.15
-      );
-      
-      leaf.rotation.y = angle;
-      leaf.rotation.x = Math.PI / 6;
-      
-      plant.add(leaf);
-    }
-    
-    return plant;
-  };
-  
-  // Function to animate crop growth with more sophisticated animation
-  const growCrops = () => {
-    if (isAnimatingRef.current) return;
-    isAnimatingRef.current = true;
-    
-    const growthDuration = 3000; // ms
-    const startTime = Date.now();
-    
-    const animatePlantGrowth = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / growthDuration, 1);
-      
-      // Use an ease-out curve for more natural growth
-      const easedProgress = 1 - Math.pow(1 - progress, 3); 
-      
-      cropObjectsRef.current.forEach(cropObj => {
-        if (cropObj.name.startsWith('crops-')) {
-          cropObj.traverse(child => {
-            if (child instanceof THREE.Object3D && !(child instanceof THREE.Mesh)) {
-              // Animate only the Y scale for growth
-              child.scale.y = easedProgress;
-              
-              // Add gentle swaying if we have stored animation parameters
-              if ((child as any).animation && progress > 0.7) {
-                const { swaySpeed, swayAmount, swayOffset } = (child as any).animation;
-                const swayFactor = (progress - 0.7) / 0.3; // Only start swaying at 70% growth
-                
-                const time = Date.now() * 0.001;
-                child.rotation.z = Math.sin(time * swaySpeed + swayOffset) * swayAmount * swayFactor;
-              }
-            }
-          });
-        }
-      });
-      
-      if (progress < 1) {
-        requestAnimationFrame(animatePlantGrowth);
-      } else {
-        isAnimatingRef.current = false;
-        toast.success("Your crops have grown successfully!");
-      }
-    };
-    
-    animatePlantGrowth();
-  };
-
-  // Function to handle camera view changes
-  const switchCameraView = (view: 'top' | 'side' | 'angled') => {
-    setCameraAngle(view);
-    
-    // Get land size
-    if (sceneRef.current) {
-      const land = sceneRef.current.getObjectByName('land') as THREE.Mesh;
-      if (land) {
-        const landSize = (land.geometry as THREE.BoxGeometry).parameters.width;
-        updateCameraPosition(landSize);
-      }
-    }
-    
-    toast.success(`Switched to ${view} view`);
-  };
-
-  // Function to handle fullscreen toggle
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch((err) => {
-        toast.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
-
-  return (
-    <div className="relative w-full h-[600px] lg:h-[700px] rounded-lg overflow-hidden border-2 border-primary/20 bg-black/50">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-          <div className="flex flex-col items-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <p className="text-lg font-medium">Loading 3D Farm Environment...</p>
-          </div>
-        </div>
-      )}
-      
-      <div ref={containerRef} className="w-full h-full bg-sky-light" />
-      
-      <div className="absolute top-4 right-4 space-x-2 flex items-center">
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-background/40 backdrop-blur-sm hover:bg-background/60 text-xs"
-          onClick={() => switchCameraView('top')}
-        >
-          Top View
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-background/40 backdrop-blur-sm hover:bg-background/60 text-xs"
-          onClick={() => switchCameraView('side')}
-        >
-          Side View
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-background/40 backdrop-blur-sm hover:bg-background/60 text-xs"
-          onClick={() => switchCameraView('angled')}
-        >
-          Angled View
-        </Button>
-        <Button 
-          variant="outline" 
-          size="icon"
-          className="bg-background/40 backdrop-blur-sm hover:bg-background/60"
-          onClick={toggleFullscreen}
-        >
-          <Maximize2 className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      <div className="absolute bottom-4 left-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-primary/80 text-primary-foreground hover:bg-primary/90 flex items-center space-x-1"
-          onClick={() => growCrops()}
-          disabled={isAnimatingRef.current}
-        >
-          <RefreshCw className="h-4 w-4 mr-1" />
-          Regrow Crops
-        </Button>
-      </div>
-      
-      <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-background/40 backdrop-blur-sm rounded-md text-sm">
-        {acres} acres • {cropAllocations.filter(c => c.percentage > 0).length} crop types
-      </div>
-    </div>
-  );
-};
-
-export default FarmScene;
+      const angle = i *

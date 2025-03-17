@@ -25,31 +25,83 @@ const Index = () => {
     toast.success(`AI has recommended optimal crop allocations for your ${acreValue} acres`);
   };
 
-  // AI recommendation function
+  // AI recommendation function with more advanced logic
   const getAIRecommendation = (landSize: number): CropAllocation[] => {
-    // This is a simplified AI recommendation logic
+    // This is a more sophisticated AI recommendation logic
     // In a real app, this could be connected to an AI service
     
-    // Base allocation percentages
+    // Base allocation percentages - starting point
     let wheatPercent = 30;
     let cornPercent = 40;
     let soybeanPercent = 20;
     let cottonPercent = 10;
     
-    // Adjust based on land size
-    if (landSize < 10) {
-      // Small farms: focus on high-value crops
-      cornPercent = 50;
+    // Adjust based on land size with more nuanced logic
+    if (landSize < 5) {
+      // Very small farms: focus on high-value, low-space crops
+      cornPercent = 60;
       soybeanPercent = 30;
-      wheatPercent = 20;
+      wheatPercent = 10;
       cottonPercent = 0;
-    } else if (landSize > 100) {
-      // Large farms: more diverse allocation
-      wheatPercent = 35;
-      cornPercent = 30;
+    } else if (landSize < 20) {
+      // Small farms: balanced approach with higher corn
+      cornPercent = 50;
+      soybeanPercent = 25;
+      wheatPercent = 25;
+      cottonPercent = 0;
+    } else if (landSize < 50) {
+      // Medium-small farms: introduce cotton
+      cornPercent = 45;
+      soybeanPercent = 25;
+      wheatPercent = 20;
+      cottonPercent = 10;
+    } else if (landSize < 100) {
+      // Medium farms: balanced approach
+      wheatPercent = 30;
+      cornPercent = 35;
       soybeanPercent = 20;
       cottonPercent = 15;
+    } else if (landSize < 300) {
+      // Medium-large farms: more wheat
+      wheatPercent = 40;
+      cornPercent = 30;
+      soybeanPercent = 15;
+      cottonPercent = 15;
+    } else {
+      // Large farms: highly diverse allocation optimized for scale
+      wheatPercent = 35;
+      cornPercent = 25;
+      soybeanPercent = 25;
+      cottonPercent = 15;
     }
+    
+    // Create more randomized, realistic-looking allocations
+    // Add slight variations to make recommendations look more "AI-generated"
+    const randomFactor = 5; // Max percentage to vary by
+    
+    const randomizePercent = (basePercent: number) => {
+      const variation = Math.floor(Math.random() * randomFactor * 2) - randomFactor;
+      return Math.max(0, Math.min(100, basePercent + variation));
+    };
+    
+    // Apply randomization
+    wheatPercent = randomizePercent(wheatPercent);
+    cornPercent = randomizePercent(cornPercent);
+    soybeanPercent = randomizePercent(soybeanPercent);
+    cottonPercent = randomizePercent(cottonPercent);
+    
+    // Normalize to ensure total is 100%
+    const total = wheatPercent + cornPercent + soybeanPercent + cottonPercent;
+    const normalizeFactor = 100 / total;
+    
+    wheatPercent = Math.round(wheatPercent * normalizeFactor);
+    cornPercent = Math.round(cornPercent * normalizeFactor);
+    soybeanPercent = Math.round(soybeanPercent * normalizeFactor);
+    cottonPercent = Math.round(cottonPercent * normalizeFactor);
+    
+    // Ensure we get exactly 100% after rounding
+    const roundingError = 100 - (wheatPercent + cornPercent + soybeanPercent + cottonPercent);
+    cornPercent += roundingError; // Add the rounding error to corn
     
     return [
       { crop: 'wheat', percentage: wheatPercent, acres: (wheatPercent / 100) * landSize },

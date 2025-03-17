@@ -5,6 +5,7 @@ import CropSelector from '@/components/CropSelector';
 import FarmScene from '@/components/FarmScene';
 import { CropAllocation } from '@/types/farm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Wheat, SeedingIcon, Tractor, Sprout } from "lucide-react";
 
 const Index = () => {
   const [acres, setAcres] = useState<number>(0);
@@ -21,113 +22,192 @@ const Index = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold text-center mb-6">3D Farm Visualizer</h1>
-      <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
-        Enter your land size and allocate different crops to visualize your farm in 3D.
-        Optimize your farm layout with this interactive tool.
-      </p>
+    <div className="min-h-screen py-12 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto">
+        <header className="text-center mb-12">
+          <div className="inline-flex items-center justify-center mb-3 bg-primary/10 px-4 py-2 rounded-full">
+            <Tractor className="h-5 w-5 text-primary mr-2" />
+            <span className="text-sm font-semibold text-primary">Interactive Farm Planning</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            3D Farm Visualizer
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Enter your land size and allocate different crops to visualize your farm in 3D.
+            Optimize your farm layout with this interactive tool.
+          </p>
+        </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 space-y-6">
-          {!showViz ? (
-            <LandForm onSubmit={handleLandSubmit} />
-          ) : (
-            <>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-semibold">Your Farm</h2>
-                <div className="px-4 py-2 bg-secondary/20 rounded-md">
-                  <span className="font-medium">{acres}</span> acres
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-4 space-y-6">
+            {!showViz ? (
+              <div className="transition-all duration-500 transform hover:scale-[1.01]">
+                <LandForm onSubmit={handleLandSubmit} />
+              </div>
+            ) : (
+              <div className="space-y-8">
+                <div className="farm-card rounded-lg p-5">
+                  <div className="farm-card-gradient" aria-hidden="true" />
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Your Farm</h2>
+                    <div className="px-4 py-2 bg-primary/10 rounded-full flex items-center">
+                      <SeedingIcon className="h-4 w-4 text-primary mr-2" />
+                      <span className="font-semibold text-primary">{acres} acres</span>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Allocate your {acres} acres among different crop types below.
+                  </p>
+                </div>
+                
+                <div className="transition-all duration-500 transform hover:scale-[1.01]">
+                  <CropSelector 
+                    totalAcres={acres} 
+                    onCropAllocationChange={handleCropAllocationChange} 
+                  />
                 </div>
               </div>
-              <CropSelector 
-                totalAcres={acres} 
-                onCropAllocationChange={handleCropAllocationChange} 
-              />
-            </>
-          )}
+            )}
+          </div>
+
+          <div className="lg:col-span-8">
+            <div className="farm-card rounded-lg overflow-hidden h-[600px] lg:h-[700px]">
+              {showViz ? (
+                <FarmScene acres={acres} cropAllocations={cropAllocations} />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center bg-gradient-to-b from-sky-light/30 to-sky-dark/10">
+                  <img 
+                    src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" 
+                    alt="Farm icon" 
+                    className="w-32 h-32 mb-6 opacity-30"
+                  />
+                  <p className="text-xl text-muted-foreground">
+                    Enter your land size to visualize your farm
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="lg:col-span-8">
-          {showViz ? (
-            <FarmScene acres={acres} cropAllocations={cropAllocations} />
-          ) : (
-            <div className="h-[600px] rounded-lg bg-muted/30 flex flex-col items-center justify-center">
-              <img 
-                src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" 
-                alt="Farm icon" 
-                className="w-24 h-24 mb-4 opacity-20"
-              />
-              <p className="text-muted-foreground">
-                Enter your land size to visualize your farm
+        {showViz && (
+          <div className="mt-16 border-t border-border/40 pt-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-3">Farm Management Tips</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Make the most of your farming operation with these expert recommendations
               </p>
             </div>
-          )}
-        </div>
+            
+            <Tabs defaultValue="general" className="w-full max-w-4xl mx-auto">
+              <TabsList className="grid grid-cols-4 mb-8 w-full max-w-2xl mx-auto p-1 bg-muted/50 rounded-full">
+                <TabsTrigger value="general" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Tractor className="h-4 w-4 mr-2" />
+                  General
+                </TabsTrigger>
+                <TabsTrigger value="wheat" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Wheat className="h-4 w-4 mr-2" />
+                  Wheat
+                </TabsTrigger>
+                <TabsTrigger value="corn" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <SeedingIcon className="h-4 w-4 mr-2" />
+                  Corn
+                </TabsTrigger>
+                <TabsTrigger value="other" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Sprout className="h-4 w-4 mr-2" />
+                  Other Crops
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="general" className="p-8 bg-card rounded-lg border border-border/40 shadow-md">
+                <h3 className="text-2xl font-bold mb-4 text-primary">Optimize Your Farm Layout</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    "Consider crop rotation to maintain soil health",
+                    "Position water-intensive crops near water sources",
+                    "Group crops with similar care requirements together",
+                    "Create buffer zones between different crop types",
+                    "Plan for access roads and equipment paths"
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start p-3 bg-muted/30 rounded-lg">
+                      <span className="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                        {i + 1}
+                      </span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </TabsContent>
+              
+              <TabsContent value="wheat" className="p-8 bg-card rounded-lg border border-border/40 shadow-md">
+                <h3 className="text-2xl font-bold mb-4 text-primary">Wheat Farming Tips</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    "Plant winter wheat in fall for early summer harvest",
+                    "Ensure proper drainage to prevent waterlogging",
+                    "Apply nitrogen fertilizer at appropriate growth stages",
+                    "Monitor for rust and other fungal diseases",
+                    "Consider precision planting for optimal spacing"
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start p-3 bg-muted/30 rounded-lg">
+                      <span className="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                        {i + 1}
+                      </span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </TabsContent>
+              
+              <TabsContent value="corn" className="p-8 bg-card rounded-lg border border-border/40 shadow-md">
+                <h3 className="text-2xl font-bold mb-4 text-primary">Corn Farming Tips</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    "Plant when soil temperatures reach 50°F (10°C)",
+                    "Space rows to allow for proper air circulation",
+                    "Apply fertilizer based on soil test results",
+                    "Implement irrigation during critical growth phases",
+                    "Monitor for corn borer and other pests"
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start p-3 bg-muted/30 rounded-lg">
+                      <span className="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                        {i + 1}
+                      </span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </TabsContent>
+              
+              <TabsContent value="other" className="p-8 bg-card rounded-lg border border-border/40 shadow-md">
+                <h3 className="text-2xl font-bold mb-4 text-primary">Other Crops Management</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    "Soybeans: Consider double-cropping with winter wheat",
+                    "Cotton: Allow for adequate sunlight exposure",
+                    "Rotate legumes (like soybeans) with non-legumes to fix nitrogen",
+                    "Implement integrated pest management strategies",
+                    "Consider market demand when planning your crop distribution"
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start p-3 bg-muted/30 rounded-lg">
+                      <span className="inline-flex items-center justify-center flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                        {i + 1}
+                      </span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+
+        <footer className="mt-20 text-center text-sm text-muted-foreground">
+          <div className="py-6 border-t border-border/40">
+            <p className="font-medium">3D Farm Visualizer — Plan and manage your agricultural land efficiently</p>
+          </div>
+        </footer>
       </div>
-
-      {showViz && (
-        <div className="mt-12 border-t pt-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">Farm Management Tips</h2>
-          
-          <Tabs defaultValue="general" className="w-full max-w-4xl mx-auto">
-            <TabsList className="grid grid-cols-4 mb-8">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="wheat">Wheat</TabsTrigger>
-              <TabsTrigger value="corn">Corn</TabsTrigger>
-              <TabsTrigger value="other">Other Crops</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="general" className="p-6 bg-card rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-3">Optimize Your Farm Layout</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Consider crop rotation to maintain soil health</li>
-                <li>Position water-intensive crops near water sources</li>
-                <li>Group crops with similar care requirements together</li>
-                <li>Create buffer zones between different crop types</li>
-                <li>Plan for access roads and equipment paths</li>
-              </ul>
-            </TabsContent>
-            
-            <TabsContent value="wheat" className="p-6 bg-card rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-3">Wheat Farming Tips</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Plant winter wheat in fall for early summer harvest</li>
-                <li>Ensure proper drainage to prevent waterlogging</li>
-                <li>Apply nitrogen fertilizer at appropriate growth stages</li>
-                <li>Monitor for rust and other fungal diseases</li>
-                <li>Consider precision planting for optimal spacing</li>
-              </ul>
-            </TabsContent>
-            
-            <TabsContent value="corn" className="p-6 bg-card rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-3">Corn Farming Tips</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Plant when soil temperatures reach 50°F (10°C)</li>
-                <li>Space rows to allow for proper air circulation</li>
-                <li>Apply fertilizer based on soil test results</li>
-                <li>Implement irrigation during critical growth phases</li>
-                <li>Monitor for corn borer and other pests</li>
-              </ul>
-            </TabsContent>
-            
-            <TabsContent value="other" className="p-6 bg-card rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-3">Other Crops Management</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Soybeans: Consider double-cropping with winter wheat</li>
-                <li>Cotton: Allow for adequate sunlight exposure</li>
-                <li>Rotate legumes (like soybeans) with non-legumes to fix nitrogen</li>
-                <li>Implement integrated pest management strategies</li>
-                <li>Consider market demand when planning your crop distribution</li>
-              </ul>
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
-
-      <footer className="mt-20 text-center text-sm text-muted-foreground">
-        <p>3D Farm Visualizer - Plan and manage your agricultural land efficiently</p>
-      </footer>
     </div>
   );
 };

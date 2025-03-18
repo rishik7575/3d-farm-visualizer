@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -5,38 +6,134 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Enhanced threejs container */
+.threejs-container {
+  position: relative;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  background-image: 
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 2px, transparent 2px, transparent 4px),
+    linear-gradient(to bottom, rgb(245, 250, 245), rgb(253, 255, 253));
+  transition: all 0.3s ease;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.threejs-container:hover {
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-.card {
-  padding: 2em;
+.three-canvas {
+  touch-action: none;
+  outline: none;
+  border-radius: inherit;
 }
 
-.read-the-docs {
-  color: #888;
+/* Farm card with enhanced visuals */
+.farm-card {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.farm-card-gradient {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(135deg, rgba(37, 165, 97, 0.1) 0%, rgba(246, 173, 82, 0.1) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.farm-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Crop badges with enhanced visuals */
+.crop-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.crop-badge:hover {
+  transform: scale(1.05);
+}
+
+.crop-badge-wheat {
+  background-color: #F5DEB3;
+  color: #8B4513;
+  border: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+.crop-badge-corn {
+  background-color: #FFD700;
+  color: #8B4513;
+  border: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+.crop-badge-soybean {
+  background-color: #6B8E23;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.crop-badge-cotton {
+  background-color: #F5F5F5;
+  color: #444;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+.pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(37, 165, 97, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 165, 97, 0.5);
 }

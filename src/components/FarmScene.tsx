@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CropAllocation } from '@/types/farm';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
-import { Loader2, Maximize2, RefreshCw } from 'lucide-react';
+import { Loader2, Maximize2, RefreshCw, RotateCcw } from 'lucide-react';
 
 interface FarmSceneProps {
   acres: number;
@@ -15,6 +16,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
   const cropObjectsRef = useRef<THREE.Object3D[]>([]);
   const isAnimatingRef = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,6 +93,17 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     renderer.domElement.classList.add('three-canvas');
     rendererRef.current = renderer;
 
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.minDistance = 5;
+    controls.maxDistance = 100;
+    controls.maxPolarAngle = Math.PI / 2 - 0.1;
+    controls.autoRotate = false;
+    controls.autoRotateSpeed = 0.5;
+    controlsRef.current = controls;
+
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
@@ -136,11 +149,8 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       requestAnimationFrame(animate);
       
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        if (!isAnimatingRef.current && cameraRef.current) {
-          const time = Date.now() * 0.0001;
-          cameraRef.current.position.y += Math.sin(time) * 0.008;
-          cameraRef.current.position.x += Math.sin(time * 0.5) * 0.003;
-          cameraRef.current.lookAt(0, 0, 0);
+        if (controlsRef.current) {
+          controlsRef.current.update();
         }
         
         rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -150,8 +160,17 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     animate();
     setIsLoading(false);
 
+    toast.info(
+      "Use mouse to rotate view (drag), zoom (scroll), and pan (right-click drag)",
+      { duration: 5000, position: "bottom-center" }
+    );
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      
+      if (controlsRef.current) {
+        controlsRef.current.dispose();
+      }
       
       if (rendererRef.current && containerRef.current) {
         containerRef.current.removeChild(rendererRef.current.domElement);
@@ -523,6 +542,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     const pond = new THREE.Mesh(pondGeometry, waterMaterial);
     pond.rotation.x = -Math.PI / 2;
     pond.position.set(-60, -0.2, 40);
+    scene.add(pond);
     
     const addPondRocks = () => {
       const rockCount = 24;
@@ -1164,6 +1184,13 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     });
   };
 
+  const resetCamera = () => {
+    if (controlsRef.current && cameraRef.current) {
+      controlsRef.current.reset();
+      updateCameraPosition(acres ? Math.sqrt(acres) * 208.7 * 0.05 : 10);
+    }
+  };
+
   return (
     <div className="relative w-full h-[500px] rounded-xl overflow-hidden border-2 border-primary/30 shadow-2xl bg-gradient-to-b from-sky-100/30 to-transparent dark:from-sky-900/10">
       {isLoading && (
@@ -1178,6 +1205,15 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       )}
       
       <div className="absolute top-3 right-3 flex gap-2 z-10">
+        <Button
+          size="icon"
+          variant="outline"
+          className="bg-background/80 backdrop-blur-sm hover:bg-background/90 rounded-full w-10 h-10 shadow-md"
+          onClick={resetCamera}
+          title="Reset camera"
+        >
+          <RotateCcw className="h-5 w-5" />
+        </Button>
         <Button
           size="icon"
           variant="outline"
@@ -1198,6 +1234,10 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
         </Button>
       </div>
       
+      <div className="absolute bottom-3 left-3 z-10 bg-background/60 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs text-muted-foreground">
+        <p>Drag to rotate • Scroll to zoom • Right-click drag to pan</p>
+      </div>
+      
       <div 
         ref={containerRef} 
         className="w-full h-full threejs-container"
@@ -1207,3 +1247,4 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
 };
 
 export default FarmScene;
+

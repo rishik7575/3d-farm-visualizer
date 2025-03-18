@@ -1,6 +1,7 @@
+
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CropAllocation } from '@/types/farm';
 import { toast } from 'sonner';
 import { Button } from './ui/button';

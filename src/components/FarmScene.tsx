@@ -682,6 +682,56 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     }
   };
 
+  const createDeciduousTree = (scene: THREE.Scene, x: number, z: number, height: number) => {
+    const textureLoader = new THREE.TextureLoader();
+    const barkTexture = textureLoader.load('https://assets.babylonjs.com/textures/bark.jpg');
+    barkTexture.wrapS = THREE.RepeatWrapping;
+    barkTexture.wrapT = THREE.RepeatWrapping;
+    barkTexture.repeat.set(1, 2);
+    
+    const trunkGeometry = new THREE.CylinderGeometry(0.35, 0.7, height, 8);
+    const trunkMaterial = new THREE.MeshStandardMaterial({ 
+      map: barkTexture,
+      color: 0x8b6141,
+      roughness: 0.9,
+      metalness: 0.1,
+      normalScale: new THREE.Vector2(0.5, 0.5)
+    });
+    
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.position.set(x, height / 2 - 0.5, z);
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    scene.add(trunk);
+    
+    const foliageGeometry = new THREE.SphereGeometry(height * 0.4, 8, 8);
+    
+    const r = 0.1 + Math.random() * 0.1;
+    const g = 0.5 + Math.random() * 0.2;
+    const b = 0.1 + Math.random() * 0.1;
+    
+    const foliageMaterial = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(r, g, b),
+      roughness: 0.8,
+      metalness: 0.05
+    });
+    
+    const vertices = foliageGeometry.attributes.position.array;
+    for (let i = 0; i < vertices.length; i += 3) {
+      vertices[i] += (Math.random() - 0.5) * height * 0.15;
+      vertices[i + 1] += (Math.random() - 0.5) * height * 0.15;
+      vertices[i + 2] += (Math.random() - 0.5) * height * 0.15;
+    }
+    
+    foliageGeometry.computeVertexNormals();
+    
+    const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+    foliage.position.set(x, height * 0.75, z);
+    foliage.castShadow = true;
+    foliage.receiveShadow = true;
+    scene.add(foliage);
+  };
+
   const addWaterFeature = (scene: THREE.Scene) => {
     const pondRadius = 30;
     const pondGeometry = new THREE.CircleGeometry(pondRadius, 64);
@@ -713,4 +763,104 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       const rockGeometry = new THREE.IcosahedronGeometry(rockSize, 1);
       
       const vertices = rockGeometry.attributes.position.array;
-      for (let j = 0; j < vertices
+      for (let j = 0; j < vertices.length; j += 3) {
+        vertices[j] += (Math.random() - 0.5) * 0.3 * rockSize;
+        vertices[j + 1] += (Math.random() - 0.5) * 0.3 * rockSize;
+        vertices[j + 2] += (Math.random() - 0.5) * 0.3 * rockSize;
+      }
+      
+      rockGeometry.computeVertexNormals();
+      
+      const grayLevel = 0.45 + Math.random() * 0.3;
+      const rockColor = new THREE.Color(grayLevel, grayLevel * 0.95, grayLevel * 0.9);
+      
+      const rockMaterial = new THREE.MeshStandardMaterial({
+        map: rockTexture,
+        color: rockColor,
+        roughness: 0.9,
+        metalness: 0.1,
+        normalMap: rockNormalMap
+      });
+      
+      const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+      
+      const rockDistance = radiusVariation * (0.9 + Math.random() * 0.2);
+      
+      rock.position.set(
+        -80 + Math.cos(angle) * rockDistance,
+        -0.5 + rockSize * 0.3,
+        50 + Math.sin(angle) * rockDistance
+      );
+      
+      rock.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+      );
+      
+      rock.castShadow = true;
+      rock.receiveShadow = true;
+      scene.add(rock);
+    }
+  };
+
+  const addTerrainFeatures = (scene: THREE.Scene) => {
+    for (let i = 0; i < 12; i++) {
+      const hillRadius = 30 + Math.random() * 40;
+      const hillHeight = 5 + Math.random() * 15;
+      
+      const hillGeometry = new THREE.ConeGeometry(hillRadius, hillHeight, 16, 1, true);
+      
+      const grassColor = new THREE.Color(
+        0.1 + Math.random() * 0.1,
+        0.4 + Math.random() * 0.2,
+        0.1 + Math.random() * 0.1
+      );
+      
+      const hillMaterial = new THREE.MeshStandardMaterial({
+        color: grassColor,
+        roughness: 0.8,
+        metalness: 0.05,
+        flatShading: true
+      });
+      
+      const vertices = hillGeometry.attributes.position.array;
+      for (let j = 0; j < vertices.length; j += 3) {
+        if (vertices[j + 1] < hillHeight * 0.9) {
+          vertices[j] += (Math.random() - 0.5) * hillRadius * 0.2;
+          vertices[j + 2] += (Math.random() - 0.5) * hillRadius * 0.2;
+        }
+      }
+      
+      hillGeometry.computeVertexNormals();
+      
+      const hill = new THREE.Mesh(hillGeometry, hillMaterial);
+      
+      const distance = 150 + Math.random() * 200;
+      const angle = Math.random() * Math.PI * 2;
+      
+      hill.position.set(
+        Math.cos(angle) * distance,
+        -hillHeight * 0.5,
+        Math.sin(angle) * distance
+      );
+      
+      hill.castShadow = true;
+      hill.receiveShadow = true;
+      scene.add(hill);
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="farm-scene">
+      {isLoading && (
+        <div className="loading-overlay">
+          <Loader2 className="animate-spin" size={32} />
+          <p>Loading 3D Environment...</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FarmScene;

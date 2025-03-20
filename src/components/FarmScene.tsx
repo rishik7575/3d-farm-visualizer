@@ -35,8 +35,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       void main() {
         vec4 worldPosition = modelMatrix * vec4(position, 1.0);
         vWorldPosition = worldPosition.xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n      }
     `;
     
     const fragmentShader = `
@@ -720,4 +719,4 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       const foliageMaterial = new THREE.MeshStandardMaterial({ 
         color: layerColor,
         roughness: 0.8,
-        metalness: 0.1
+        metalness:

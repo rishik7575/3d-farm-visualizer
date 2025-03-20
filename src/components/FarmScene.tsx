@@ -100,7 +100,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
     renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.physicallyCorrectLights = true;
     containerRef.current.appendChild(renderer.domElement);
     renderer.domElement.classList.add('three-canvas');
     rendererRef.current = renderer;
@@ -354,9 +353,9 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
   const addEnhancedLandscape = (scene: THREE.Scene) => {
     addNaturalTreeDistribution(scene);
     
-    addRealisticWaterFeature(scene);
+    addWaterFeature(scene);
     
-    addRollingHills(scene);
+    addTerrainFeatures(scene);
     
     addGroundDetails(scene);
   };
@@ -683,11 +682,35 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     }
   };
 
-  return (
-    <div ref={containerRef} className="farm-scene">
-      <div className="three-canvas"></div>
-    </div>
-  );
-};
-
-export default FarmScene;
+  const addWaterFeature = (scene: THREE.Scene) => {
+    const pondRadius = 30;
+    const pondGeometry = new THREE.CircleGeometry(pondRadius, 64);
+    
+    const waterMaterial = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(0x1e4d6b),
+      transparent: true,
+      opacity: 0.85,
+      roughness: 0.1,
+      metalness: 0.3
+    });
+    
+    const pond = new THREE.Mesh(pondGeometry, waterMaterial);
+    pond.rotation.x = -Math.PI / 2;
+    pond.position.set(-80, -0.2, 50);
+    pond.name = 'water';
+    scene.add(pond);
+    
+    const rockCount = 32;
+    const textureLoader = new THREE.TextureLoader();
+    const rockTexture = textureLoader.load('https://assets.babylonjs.com/textures/rock.png');
+    const rockNormalMap = textureLoader.load('https://assets.babylonjs.com/textures/rockn.png');
+    
+    for (let i = 0; i < rockCount; i++) {
+      const angle = (i / rockCount) * Math.PI * 2;
+      const radiusVariation = pondRadius + (Math.random() * 3 - 1);
+      
+      const rockSize = 1.2 + Math.random() * 1.8;
+      const rockGeometry = new THREE.IcosahedronGeometry(rockSize, 1);
+      
+      const vertices = rockGeometry.attributes.position.array;
+      for (let j = 0; j < vertices

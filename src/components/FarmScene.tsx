@@ -29,13 +29,13 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
 
     const scene = new THREE.Scene();
     
-    // Enhanced sky with improved shader
     const vertexShader = `
       varying vec3 vWorldPosition;
       void main() {
         vec4 worldPosition = modelMatrix * vec4(position, 1.0);
         vWorldPosition = worldPosition.xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n      }
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
     `;
     
     const fragmentShader = `
@@ -80,14 +80,12 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     
     sceneRef.current = scene;
 
-    // Enhanced camera with better default settings
     const aspectRatio = containerRef.current.clientWidth / containerRef.current.clientHeight;
     const camera = new THREE.PerspectiveCamera(65, aspectRatio, 0.1, 2000);
     camera.position.set(5, 15, 25);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    // Professional renderer with advanced settings
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       logarithmicDepthBuffer: true,
@@ -96,7 +94,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       alpha: true
     });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap at 2x for performance
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -107,14 +105,13 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     renderer.domElement.classList.add('three-canvas');
     rendererRef.current = renderer;
 
-    // Enhanced OrbitControls for 360-degree movement
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
     controls.minDistance = 5;
     controls.maxDistance = 200;
-    controls.maxPolarAngle = Math.PI / 1.5; // Allow more vertical rotation
+    controls.maxPolarAngle = Math.PI / 1.5;
     controls.autoRotate = false;
     controls.autoRotateSpeed = 0.5;
     controls.enablePan = true;
@@ -123,7 +120,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     controls.zoomSpeed = 1.2;
     controlsRef.current = controls;
 
-    // Enhanced lighting for more realistic shadows and colors
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
@@ -149,7 +145,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x5a3a22, 0.6);
     scene.add(hemisphereLight);
 
-    // Add enhanced environment
     addEnhancedEnvironment(scene);
 
     const handleResize = () => {
@@ -175,7 +170,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
           controlsRef.current.update();
         }
         
-        // Make clouds move slowly
         scene.children.forEach(child => {
           if (child.name === 'cloud' && !isAnimatingRef.current) {
             const speed = (child as any).userData.speed || 0.02;
@@ -186,7 +180,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
           }
         });
         
-        // Make water ripple
         const waterMesh = scene.getObjectByName('water');
         if (waterMesh && (waterMesh as THREE.Mesh).material instanceof THREE.ShaderMaterial) {
           const material = (waterMesh as THREE.Mesh).material as THREE.ShaderMaterial;
@@ -221,9 +214,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     };
   }, []);
 
-  // Enhanced environment with more realistic elements
   const addEnhancedEnvironment = (scene: THREE.Scene) => {
-    // Distant mountains with parallax effect
     const createMountainRange = (distance: number, height: number, color: string, opacity: number) => {
       const mountainGeometry = new THREE.BufferGeometry();
       const peaks = 100;
@@ -231,7 +222,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       
       for (let i = 0; i < peaks; i++) {
         const x = (i / (peaks - 1)) * 2000 - 1000;
-        // Generate more natural-looking mountains with perlin-like noise
         const peakHeight = Math.sin(i * 0.21) * 20 + Math.sin(i * 0.37) * 15 + Math.sin(i * 0.13) * 25 + height;
         positions.push(x, 0, -distance);
         positions.push(x, peakHeight, -distance);
@@ -249,18 +239,15 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       scene.add(mountains);
     };
     
-    // Create multiple mountain ranges for depth
     createMountainRange(300, 80, '#8393a7', 0.9);
     createMountainRange(500, 100, '#6a7a8a', 0.7);
     createMountainRange(700, 130, '#566573', 0.5);
     
-    // Enhanced textured ground with normal maps for realism
     const groundSize = 2000;
     const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 256, 256);
     
     const textureLoader = new THREE.TextureLoader();
     
-    // Load higher quality textures
     const grassTexture = textureLoader.load('https://images.unsplash.com/photo-1570748788687-8c929488f8d4?auto=format&fit=crop&w=2000&q=100');
     grassTexture.wrapS = THREE.RepeatWrapping;
     grassTexture.wrapT = THREE.RepeatWrapping;
@@ -276,14 +263,12 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     grassRoughnessMap.wrapT = THREE.RepeatWrapping;
     grassRoughnessMap.repeat.set(100, 100);
     
-    // Create undulations in the ground for more realistic terrain
     const vertices = groundGeometry.attributes.position.array;
     for (let i = 0; i < vertices.length; i += 3) {
       const x = vertices[i];
       const z = vertices[i + 2];
       const distance = Math.sqrt(x * x + z * z);
       
-      // Create gentle rolling hills that get more pronounced farther from center
       if (distance > 50) {
         const amplitude = 0.2 + (distance / groundSize) * 20;
         const frequency = 0.004;
@@ -312,7 +297,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     
     addEnhancedLandscape(scene);
     
-    // Atmospheric fog for depth perception
     scene.fog = new THREE.FogExp2(0xe6f0ff, 0.0012);
     
     addRealisticClouds(scene);
@@ -322,7 +306,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     const textureLoader = new THREE.TextureLoader();
     const cloudTexture = textureLoader.load('https://assets.babylonjs.com/textures/cloud.png');
     
-    // Cloud shape geometries for variety
     const cloudShapes = [
       new THREE.PlaneGeometry(70, 50),
       new THREE.PlaneGeometry(90, 60),
@@ -334,7 +317,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       const randomShape = cloudShapes[Math.floor(Math.random() * cloudShapes.length)];
       const cloudGeometry = randomShape.clone();
       
-      // Randomize cloud color slightly for variety
       const cloudColor = new THREE.Color(0xffffff);
       cloudColor.r = 0.95 + Math.random() * 0.05;
       cloudColor.g = 0.95 + Math.random() * 0.05;
@@ -363,7 +345,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       cloud.rotation.z = Math.random() * Math.PI;
       cloud.lookAt(0, cloud.position.y, 0);
       
-      // Store cloud movement speed in userData
       cloud.userData.speed = 0.05 + Math.random() * 0.15;
       
       scene.add(cloud);
@@ -380,16 +361,13 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     addGroundDetails(scene);
   };
 
-  // Enhanced ground details with rocks, bushes, and small terrain features
   const addGroundDetails = (scene: THREE.Scene) => {
     const textureLoader = new THREE.TextureLoader();
     const rockTexture = textureLoader.load('https://assets.babylonjs.com/textures/rock.png');
     const rockNormalMap = textureLoader.load('https://assets.babylonjs.com/textures/rockn.png');
     
-    // Add more variety of rocks
     for (let i = 0; i < 120; i++) {
       const rockSize = 0.5 + Math.random() * 3;
-      // Mix different rock shapes
       let rockGeometry;
       const shapeType = Math.random();
       
@@ -401,7 +379,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
         rockGeometry = new THREE.OctahedronGeometry(rockSize, 0);
       }
       
-      // Distort vertices for more natural rock look
       const vertices = rockGeometry.attributes.position.array;
       for (let j = 0; j < vertices.length; j += 3) {
         vertices[j] += (Math.random() - 0.5) * 0.4 * rockSize;
@@ -411,7 +388,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       
       rockGeometry.computeVertexNormals();
       
-      // Vary rock colors
       const grayLevel = 0.5 + Math.random() * 0.4;
       const rockColor = new THREE.Color(grayLevel, grayLevel * 0.95, grayLevel * 0.9);
       
@@ -425,7 +401,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       
       const rock = new THREE.Mesh(rockGeometry, rockMaterial);
       
-      // Place rocks in a more natural distribution
       const distance = 60 + Math.random() * 160;
       const angle = Math.random() * Math.PI * 2;
       
@@ -441,7 +416,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
         Math.random() * Math.PI
       );
       
-      // Scale rock slightly randomly
       const scaleVar = 0.8 + Math.random() * 0.4;
       rock.scale.set(scaleVar, scaleVar * (0.8 + Math.random() * 0.4), scaleVar);
       
@@ -450,7 +424,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       scene.add(rock);
     }
     
-    // Add small bushes for more detail
     addSmallBushes(scene);
   };
 
@@ -459,7 +432,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       const bushSize = 0.5 + Math.random() * 1.2;
       
       const bushGeometry = new THREE.SphereGeometry(bushSize, 8, 8);
-      // Distort for more natural look
       const vertices = bushGeometry.attributes.position.array;
       for (let j = 0; j < vertices.length; j += 3) {
         if (vertices[j + 1] > 0) {
@@ -471,7 +443,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       
       bushGeometry.computeVertexNormals();
       
-      // Vary bush greens for realism
       const r = 0.1 + Math.random() * 0.1;
       const g = 0.4 + Math.random() * 0.2;
       const b = 0.1 + Math.random() * 0.1;
@@ -484,7 +455,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       
       const bush = new THREE.Mesh(bushGeometry, bushMaterial);
       
-      // Place bushes with natural distribution
       const distance = 50 + Math.random() * 150;
       const angle = Math.random() * Math.PI * 2;
       
@@ -494,7 +464,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
         Math.sin(angle) * distance
       );
       
-      // Random rotation and slight scaling
       bush.rotation.y = Math.random() * Math.PI * 2;
       const scaleX = 0.8 + Math.random() * 0.4;
       const scaleZ = 0.8 + Math.random() * 0.4;
@@ -506,11 +475,9 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     }
   };
 
-  // Improved tree clusters that look more natural
   const addNaturalTreeDistribution = (scene: THREE.Scene) => {
     const treePositions = [];
     
-    // Create several distinct tree clusters
     const treeClusters = 7;
     const treesPerCluster = 10;
     
@@ -522,7 +489,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       
       const actualTreesInCluster = Math.floor(treesPerCluster + (Math.random() * 6 - 2));
       
-      // Create primary trees in the cluster center
       for (let i = 0; i < actualTreesInCluster; i++) {
         const spread = 20 + Math.random() * 15;
         const angle = Math.random() * Math.PI * 2;
@@ -532,7 +498,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
         treePositions.push({ x, z, size: 1.0 + Math.random() * 0.3 });
       }
       
-      // Add smaller trees around the periphery
       for (let i = 0; i < Math.floor(actualTreesInCluster * 1.5); i++) {
         const spread = 25 + Math.random() * 20;
         const angle = Math.random() * Math.PI * 2;
@@ -543,7 +508,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       }
     }
     
-    // Add some solitary trees for variety
     for (let i = 0; i < 20; i++) {
       const angle = Math.random() * Math.PI * 2;
       const radius = 60 + Math.random() * 140;
@@ -552,9 +516,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       treePositions.push({ x, z, size: 0.9 + Math.random() * 0.4 });
     }
     
-    // Create the trees with more variety
     treePositions.forEach(pos => {
-      // More tree type variety
       const treeTypeRoll = Math.random();
       let treeType;
       
@@ -587,7 +549,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     });
   };
 
-  // New tree type for variety
   const createCypressTree = (scene: THREE.Scene, x: number, z: number, height: number) => {
     const textureLoader = new THREE.TextureLoader();
     const barkTexture = textureLoader.load('https://assets.babylonjs.com/textures/bark.jpg');
@@ -595,7 +556,7 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     barkTexture.wrapT = THREE.RepeatWrapping;
     barkTexture.repeat.set(1, 2);
     
-    const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.45, height, 8);
+    const trunkGeometry = new THREE.CylinderGeometry(0.45, 0.6, height, 8);
     const trunkMaterial = new THREE.MeshStandardMaterial({ 
       map: barkTexture,
       color: 0x8b4513,
@@ -609,14 +570,12 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     trunk.receiveShadow = true;
     scene.add(trunk);
     
-    // Tall, narrow foliage for cypress trees
     const foliageGeometry = new THREE.ConeGeometry(1.2, height * 1.2, 8);
     
-    // Dark green for cypress
     const foliageMaterial = new THREE.MeshStandardMaterial({ 
       color: new THREE.Color(0.05, 0.25, 0.05),
       roughness: 0.8,
-      metalness: 0.1,
+      metalness: 0.1
     });
     
     const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
@@ -626,7 +585,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     scene.add(foliage);
   };
 
-  // Another tree variation - bare/dead tree
   const createBareTree = (scene: THREE.Scene, x: number, z: number, height: number) => {
     const tiltX = (Math.random() - 0.5) * 0.3;
     const tiltZ = (Math.random() - 0.5) * 0.3;
@@ -646,7 +604,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     trunk.receiveShadow = true;
     scene.add(trunk);
     
-    // Add simple branches
     const addBranch = (height: number, angle: number, length: number, thickness: number) => {
       const branchGeometry = new THREE.CylinderGeometry(thickness * 0.6, thickness, length, 5);
       const branch = new THREE.Mesh(branchGeometry, trunkMaterial);
@@ -661,7 +618,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
       trunk.add(branch);
     };
     
-    // Add 3-5 branches
     const branchCount = 3 + Math.floor(Math.random() * 3);
     for (let i = 0; i < branchCount; i++) {
       const branchHeight = (i / branchCount) * height * 0.7 + height * 0.2;
@@ -673,7 +629,6 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     }
   };
 
-  // Enhanced pine tree with more detail
   const createPineTree = (scene: THREE.Scene, x: number, z: number, height: number) => {
     const textureLoader = new THREE.TextureLoader();
     const barkTexture = textureLoader.load('https://assets.babylonjs.com/textures/bark.jpg');
@@ -695,28 +650,44 @@ const FarmScene = ({ acres, cropAllocations }: FarmSceneProps) => {
     trunk.receiveShadow = true;
     scene.add(trunk);
     
-    // More layers for a fuller pine tree
     const foliageLayers = Math.floor(Math.random() * 2) + 4;
     const layerStep = height * 0.6 / foliageLayers;
     
-    // Vary the green slightly for each tree
     const colorVariance = Math.random() * 0.2;
-    // More vibrant green for pine trees
     const baseColor = new THREE.Color(0.1, 0.5 - colorVariance, 0.15);
     
     for (let i = 0; i < foliageLayers; i++) {
-      // Calculate layer dimensions
       const layerSize = 4 - (i * (3.0 / foliageLayers));
       const layerHeight = 2.5 - (i * (1.0 / foliageLayers));
       
-      // Create layer geometry
       const foliageGeometry = new THREE.ConeGeometry(layerSize, layerHeight, 8);
       
-      // Slightly vary the green for each layer
       const layerColor = baseColor.clone();
-      layerColor.g += (i / foliageLayers) * 0.1; // Higher layers are lighter
+      layerColor.g += (i / foliageLayers) * 0.1;
       
       const foliageMaterial = new THREE.MeshStandardMaterial({ 
         color: layerColor,
         roughness: 0.8,
-        metalness:
+        metalness: 0.1
+      });
+      
+      const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+      foliage.position.set(
+        x, 
+        trunk.position.y + height * 0.4 + (i * layerStep),
+        z
+      );
+      foliage.castShadow = true;
+      foliage.receiveShadow = true;
+      scene.add(foliage);
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="farm-scene">
+      <div className="three-canvas"></div>
+    </div>
+  );
+};
+
+export default FarmScene;

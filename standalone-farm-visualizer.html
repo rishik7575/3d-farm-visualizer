@@ -1,0 +1,892 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Farm Visualizer</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px 0;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(37, 165, 97, 0.1);
+      padding: 8px 16px;
+      border-radius: 999px;
+      margin-bottom: 15px;
+    }
+    
+    .badge-icon {
+      margin-right: 8px;
+      color: #25a561;
+    }
+    
+    .badge-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #25a561;
+    }
+    
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      background: linear-gradient(to right, #25a561, #f6ad52);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+    }
+    
+    .form-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      height: fit-content;
+    }
+    
+    .form-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #444;
+    }
+    
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    input[type="number"]:focus {
+      border-color: #25a561;
+      box-shadow: 0 0 0 3px rgba(37, 165, 97, 0.2);
+      outline: none;
+    }
+    
+    button {
+      background: linear-gradient(to right, #25a561, #3bb978);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.3s, transform 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 165, 97, 0.15);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .visualization {
+      position: relative;
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      height: 600px;
+    }
+    
+    .placeholder {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to bottom, rgba(165, 220, 185, 0.2), rgba(37, 165, 97, 0.1));
+    }
+    
+    .placeholder img {
+      width: 80px;
+      height: 80px;
+      opacity: 0.3;
+      margin-bottom: 20px;
+    }
+    
+    .placeholder p {
+      color: #666;
+      font-size: 18px;
+    }
+    
+    #farm-canvas {
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+    
+    .crop-allocation {
+      margin-top: 20px;
+    }
+    
+    .allocation-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .allocation-title h3 {
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .acres-badge {
+      padding: 6px 12px;
+      background-color: rgba(37, 165, 97, 0.1);
+      color: #25a561;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .acres-badge svg {
+      margin-right: 6px;
+    }
+    
+    .allocation-list {
+      list-style-type: none;
+    }
+    
+    .allocation-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    
+    .crop-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    
+    .crop-wheat { background-color: #F5DEB3; }
+    .crop-corn { background-color: #FFD700; }
+    .crop-soybean { background-color: #6B8E23; }
+    .crop-cotton { background-color: #F5F5F5; border: 1px solid #ddd; }
+    
+    .crop-name {
+      flex: 1;
+      font-weight: 600;
+      color: #444;
+    }
+    
+    .crop-percentage {
+      font-weight: 600;
+      color: #666;
+      margin-right: 15px;
+    }
+    
+    .crop-acres {
+      font-size: 14px;
+      color: #888;
+      min-width: 80px;
+      text-align: right;
+    }
+    
+    .controls {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+    
+    .control-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: white;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .control-btn:hover {
+      background-color: rgba(37, 165, 97, 0.1);
+    }
+    
+    .loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(37, 165, 97, 0.3);
+      border-top-color: #25a561;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .tooltip {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-size: 14px;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .visualization {
+        height: 400px;
+      }
+      
+      h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">
+        <svg class="badge-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 10V8a2 2 0 0 0-2-2H8l-2-2H2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h6"></path>
+          <path d="M18 14v6"></path>
+          <path d="M18 17h5v3h-5z"></path>
+        </svg>
+        <span class="badge-text">AI-Powered Farm Planning</span>
+      </div>
+      <h1>3D Farm Visualizer</h1>
+      <p class="subtitle">Enter your land size to visualize your farm in 3D with AI-recommended crop allocations.</p>
+    </header>
+
+    <div class="main-content">
+      <div id="input-section">
+        <div class="form-card">
+          <h2 class="form-title">Enter Your Land Details</h2>
+          <div class="input-group">
+            <label for="acres">How many acres of land do you have?</label>
+            <input type="number" id="acres" min="1" max="1000" placeholder="Enter acres" value="50">
+          </div>
+          <button id="visualize-btn">Visualize My Farm</button>
+        </div>
+      </div>
+
+      <div class="visualization">
+        <div class="placeholder" id="placeholder">
+          <img src="https://cdn-icons-png.flaticon.com/512/2329/2329865.png" alt="Farm icon">
+          <p>Enter your land size to visualize your farm</p>
+        </div>
+        <canvas id="farm-canvas" style="display: none;"></canvas>
+        <div class="tooltip" id="tooltip">Drag to rotate, scroll to zoom</div>
+        <div class="controls" id="controls" style="display: none;">
+          <div class="control-btn" id="reset-view" title="Reset View">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+          </div>
+          <div class="control-btn" id="top-view" title="Top View">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+        </div>
+        <div id="loading" class="loading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Creating your farm visualization...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Farm visualization logic
+    document.addEventListener('DOMContentLoaded', function() {
+      let renderer, scene, camera, controls;
+      let cropObjects = [];
+      let isSceneInitialized = false;
+      
+      // Crop types and colors
+      const cropTypes = {
+        wheat: { color: 0xF5DEB3, displayName: 'Wheat' },
+        corn: { color: 0xFFD700, displayName: 'Corn' },
+        soybean: { color: 0x6B8E23, displayName: 'Soybean' },
+        cotton: { color: 0xF5F5F5, displayName: 'Cotton' }
+      };
+      
+      document.getElementById('visualize-btn').addEventListener('click', function() {
+        const acres = parseInt(document.getElementById('acres').value);
+        
+        if (!acres || acres <= 0 || acres > 1000) {
+          alert('Please enter a valid number of acres between 1 and 1000.');
+          return;
+        }
+        
+        // Hide placeholder, show loading and canvas
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('farm-canvas').style.display = 'block';
+        
+        // Generate crop allocations based on acreage
+        const cropAllocations = getAIRecommendation(acres);
+        
+        // Initialize or update the 3D scene
+        if (!isSceneInitialized) {
+          initScene();
+          isSceneInitialized = true;
+        }
+        
+        // Show visualization and controls
+        setTimeout(() => {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('controls').style.display = 'flex';
+          
+          // Show the tooltip
+          const tooltip = document.getElementById('tooltip');
+          tooltip.style.opacity = '1';
+          setTimeout(() => {
+            tooltip.style.opacity = '0';
+          }, 5000);
+          
+          // Create the visualization
+          createFarmVisualization(acres, cropAllocations);
+          
+          // Update farm info display
+          updateFarmDisplay(acres, cropAllocations);
+        }, 1500);
+      });
+      
+      function initScene() {
+        const container = document.querySelector('.visualization');
+        const canvas = document.getElementById('farm-canvas');
+        
+        // Scene setup
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f8ff);
+        
+        // Camera setup
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 1000);
+        camera.position.set(15, 15, 15);
+        camera.lookAt(0, 0, 0);
+        
+        // Renderer setup
+        renderer = new THREE.WebGLRenderer({ 
+          canvas: canvas,
+          antialias: true,
+          alpha: true
+        });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        
+        // Lighting
+        // Add ambient light for general illumination
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        // Add directional light for shadows and highlights
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
+        scene.add(directionalLight);
+        
+        // Add a soft light from the opposite side to fill shadows
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        fillLight.position.set(-5, 5, -5);
+        scene.add(fillLight);
+        
+        // Ground
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        const groundMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0x4d7942,
+          roughness: 0.8,
+          metalness: 0.2
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+        
+        // Grid helper for better spatial perception
+        const gridHelper = new THREE.GridHelper(100, 100, 0x888888, 0xcccccc);
+        gridHelper.position.y = 0.01; // Slightly above ground to prevent z-fighting
+        scene.add(gridHelper);
+        
+        // Controls
+        controls = new THREE.OrbitControls(camera, canvas);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 5;
+        controls.maxDistance = 50;
+        controls.maxPolarAngle = Math.PI / 2;
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+          const width = container.clientWidth;
+          const height = container.clientHeight;
+          
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          
+          renderer.setSize(width, height);
+        });
+        
+        // Control buttons
+        document.getElementById('reset-view').addEventListener('click', () => {
+          camera.position.set(15, 15, 15);
+          camera.lookAt(0, 0, 0);
+          controls.update();
+        });
+        
+        document.getElementById('top-view').addEventListener('click', () => {
+          camera.position.set(0, 25, 0);
+          camera.lookAt(0, 0, 0);
+          controls.update();
+        });
+        
+        // Animation loop
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+        }
+        
+        animate();
+      }
+      
+      function createFarmVisualization(acres, cropAllocations) {
+        // Clear previous objects
+        cropObjects.forEach(obj => {
+          scene.remove(obj);
+        });
+        cropObjects = [];
+        
+        const farmRadius = Math.sqrt(acres / Math.PI) * 5; // Scale for visualization
+        
+        // Create a circular farm
+        let startAngle = 0;
+        cropAllocations.forEach(crop => {
+          if (crop.percentage > 0) {
+            // Calculate sector angle based on percentage
+            const angle = (crop.percentage / 100) * Math.PI * 2;
+            createCropSector(farmRadius, startAngle, angle, crop.crop);
+            startAngle += angle;
+          }
+        });
+      }
+      
+      function createCropSector(radius, startAngle, sectorAngle, cropType) {
+        const segments = Math.ceil(sectorAngle * 12); // More segments for smoother curves
+        const cropColor = cropTypes[cropType].color;
+        
+        // Create a sector shape
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 0);
+        
+        for (let i = 0; i <= segments; i++) {
+          const angle = startAngle + (i / segments) * sectorAngle;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          shape.lineTo(x, y);
+        }
+        shape.lineTo(0, 0);
+        
+        // Create geometry from shape
+        const geometry = new THREE.ShapeGeometry(shape);
+        const material = new THREE.MeshStandardMaterial({
+          color: cropColor,
+          metalness: 0.1,
+          roughness: 0.8,
+          side: THREE.DoubleSide
+        });
+        
+        const sector = new THREE.Mesh(geometry, material);
+        sector.rotation.x = -Math.PI / 2; // Rotate to lay flat
+        sector.position.y = 0.05; // Slightly above ground
+        sector.castShadow = true;
+        sector.receiveShadow = true;
+        
+        scene.add(sector);
+        cropObjects.push(sector);
+        
+        // Add crop 3D elements
+        const cropElements = Math.ceil(sectorAngle * 15);
+        const cropHeight = cropType === 'wheat' ? 0.8 :
+                           cropType === 'corn' ? 1.2 :
+                           cropType === 'soybean' ? 0.5 : 0.7;
+        
+        for (let i = 0; i < cropElements; i++) {
+          const randomAngle = startAngle + (Math.random() * sectorAngle);
+          const randomRadius = (Math.random() * 0.7 + 0.3) * radius; // Between 30% and 100% of radius
+          const x = Math.cos(randomAngle) * randomRadius;
+          const z = Math.sin(randomAngle) * randomRadius;
+          
+          // Create crop representation based on type
+          let cropMesh;
+          
+          if (cropType === 'wheat') {
+            cropMesh = createWheatCrop(cropHeight);
+          } else if (cropType === 'corn') {
+            cropMesh = createCornCrop(cropHeight);
+          } else if (cropType === 'soybean') {
+            cropMesh = createSoybeanCrop(cropHeight);
+          } else {
+            cropMesh = createCottonCrop(cropHeight);
+          }
+          
+          cropMesh.position.set(x, cropHeight / 2, z);
+          cropMesh.castShadow = true;
+          scene.add(cropMesh);
+          cropObjects.push(cropMesh);
+        }
+      }
+      
+      function createWheatCrop(height) {
+        const group = new THREE.Group();
+        
+        // Stem
+        const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, height, 8);
+        const stemMaterial = new THREE.MeshStandardMaterial({ color: 0xBDB76B });
+        const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+        stem.position.y = height / 2;
+        group.add(stem);
+        
+        // Wheat head
+        const headGeometry = new THREE.CylinderGeometry(0.05, 0.03, height * 0.3, 8);
+        const headMaterial = new THREE.MeshStandardMaterial({ color: 0xF5DEB3 });
+        const head = new THREE.Mesh(headGeometry, headMaterial);
+        head.position.y = height;
+        group.add(head);
+        
+        return group;
+      }
+      
+      function createCornCrop(height) {
+        const group = new THREE.Group();
+        
+        // Stem
+        const stemGeometry = new THREE.CylinderGeometry(0.04, 0.05, height, 8);
+        const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x6B8E23 });
+        const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+        stem.position.y = height / 2;
+        group.add(stem);
+        
+        // Corn cob
+        const cobGeometry = new THREE.CylinderGeometry(0.08, 0.08, height * 0.3, 8);
+        const cobMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700 });
+        const cob = new THREE.Mesh(cobGeometry, cobMaterial);
+        cob.position.y = height * 0.7;
+        cob.rotation.x = Math.PI / 2;
+        cob.position.z = 0.1;
+        group.add(cob);
+        
+        // Leaves
+        const leafGeometry = new THREE.PlaneGeometry(0.3, height * 0.8);
+        const leafMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0x556B2F,
+          side: THREE.DoubleSide
+        });
+        
+        for (let i = 0; i < 4; i++) {
+          const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+          leaf.position.y = height * 0.5;
+          leaf.rotation.y = (Math.PI / 2) * i;
+          leaf.rotation.z = Math.PI / 6;
+          group.add(leaf);
+        }
+        
+        return group;
+      }
+      
+      function createSoybeanCrop(height) {
+        const group = new THREE.Group();
+        
+        // Main stem
+        const stemGeometry = new THREE.CylinderGeometry(0.02, 0.03, height, 8);
+        const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+        const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+        stem.position.y = height / 2;
+        group.add(stem);
+        
+        // Leaves
+        const leafMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0x6B8E23,
+          side: THREE.DoubleSide
+        });
+        
+        for (let i = 0; i < 5; i++) {
+          const leafSize = 0.15;
+          const leafGeometry = new THREE.CircleGeometry(leafSize, 8);
+          const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+          
+          leaf.position.y = (i / 5) * height + 0.1;
+          leaf.position.x = ((i % 2) * 2 - 1) * 0.1;
+          leaf.rotation.x = -Math.PI / 2;
+          leaf.rotation.z = (Math.random() - 0.5) * 0.5;
+          
+          group.add(leaf);
+        }
+        
+        return group;
+      }
+      
+      function createCottonCrop(height) {
+        const group = new THREE.Group();
+        
+        // Stem
+        const stemGeometry = new THREE.CylinderGeometry(0.02, 0.03, height, 8);
+        const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+        const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+        stem.position.y = height / 2;
+        group.add(stem);
+        
+        // Cotton bolls
+        const bollGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const bollMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
+        
+        for (let i = 0; i < 3; i++) {
+          const boll = new THREE.Mesh(bollGeometry, bollMaterial);
+          const angle = (i / 3) * Math.PI * 2;
+          
+          boll.position.x = Math.cos(angle) * 0.15;
+          boll.position.z = Math.sin(angle) * 0.15;
+          boll.position.y = height * 0.7;
+          
+          group.add(boll);
+        }
+        
+        return group;
+      }
+      
+      function updateFarmDisplay(acres, cropAllocations) {
+        // Create or update crop allocation display
+        const inputSection = document.getElementById('input-section');
+        
+        // Remove existing allocation if any
+        const existingAllocation = document.querySelector('.crop-allocation');
+        if (existingAllocation) {
+          existingAllocation.remove();
+        }
+        
+        // Create new allocation display
+        const allocationDiv = document.createElement('div');
+        allocationDiv.className = 'crop-allocation';
+        allocationDiv.innerHTML = `
+          <div class="form-card">
+            <div class="allocation-title">
+              <h3>AI-Recommended Allocation</h3>
+              <div class="acres-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10L12 5 3 10l9 5 9-5z"></path>
+                  <path d="M21 16L12 21 3 16"></path>
+                  <path d="M21 10v6"></path>
+                  <path d="M3 10v6"></path>
+                </svg>
+                ${acres} acres
+              </div>
+            </div>
+            <ul class="allocation-list">
+              ${cropAllocations.map(crop => `
+                <li class="allocation-item">
+                  <div class="crop-color crop-${crop.crop}"></div>
+                  <span class="crop-name">${cropTypes[crop.crop].displayName}</span>
+                  <span class="crop-percentage">${crop.percentage}%</span>
+                  <span class="crop-acres">${crop.acres.toFixed(1)} acres</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+        
+        inputSection.appendChild(allocationDiv);
+      }
+      
+      function getAIRecommendation(landSize) {
+        // Base allocation percentages
+        let wheatPercent = 30;
+        let cornPercent = 40;
+        let soybeanPercent = 20;
+        let cottonPercent = 10;
+        
+        // Adjust based on land size with more nuanced logic
+        if (landSize < 5) {
+          // Very small farms: focus on high-value, low-space crops
+          cornPercent = 60;
+          soybeanPercent = 30;
+          wheatPercent = 10;
+          cottonPercent = 0;
+        } else if (landSize < 20) {
+          // Small farms: balanced approach with higher corn
+          cornPercent = 50;
+          soybeanPercent = 25;
+          wheatPercent = 25;
+          cottonPercent = 0;
+        } else if (landSize < 50) {
+          // Medium-small farms: introduce cotton
+          cornPercent = 45;
+          soybeanPercent = 25;
+          wheatPercent = 20;
+          cottonPercent = 10;
+        } else if (landSize < 100) {
+          // Medium farms: balanced approach
+          wheatPercent = 30;
+          cornPercent = 35;
+          soybeanPercent = 20;
+          cottonPercent = 15;
+        } else if (landSize < 300) {
+          // Medium-large farms: more wheat
+          wheatPercent = 40;
+          cornPercent = 30;
+          soybeanPercent = 15;
+          cottonPercent = 15;
+        } else {
+          // Large farms: highly diverse allocation
+          wheatPercent = 35;
+          cornPercent = 25;
+          soybeanPercent = 25;
+          cottonPercent = 15;
+        }
+        
+        // Add some randomization
+        const randomFactor = 5;
+        const randomizePercent = (basePercent) => {
+          const variation = Math.floor(Math.random() * randomFactor * 2) - randomFactor;
+          return Math.max(0, Math.min(100, basePercent + variation));
+        };
+        
+        wheatPercent = randomizePercent(wheatPercent);
+        cornPercent = randomizePercent(cornPercent);
+        soybeanPercent = randomizePercent(soybeanPercent);
+        cottonPercent = randomizePercent(cottonPercent);
+        
+        // Normalize to ensure total is 100%
+        const total = wheatPercent + cornPercent + soybeanPercent + cottonPercent;
+        const normalizeFactor = 100 / total;
+        
+        wheatPercent = Math.round(wheatPercent * normalizeFactor);
+        cornPercent = Math.round(cornPercent * normalizeFactor);
+        soybeanPercent = Math.round(soybeanPercent * normalizeFactor);
+        cottonPercent = Math.round(cottonPercent * normalizeFactor);
+        
+        // Fix any rounding errors
+        const roundingError = 100 - (wheatPercent + cornPercent + soybeanPercent + cottonPercent);
+        cornPercent += roundingError;
+        
+        return [
+          { crop: 'wheat', percentage: wheatPercent, acres: (wheatPercent / 100) * landSize },
+          { crop: 'corn', percentage: cornPercent, acres: (cornPercent / 100) * landSize },
+          { crop: 'soybean', percentage: soybeanPercent, acres: (soybeanPercent / 100) * landSize },
+          { crop: 'cotton', percentage: cottonPercent, acres: (cottonPercent / 100) * landSize }
+        ];
+      }
+      
+      // Auto-run with default value for demo purposes
+      setTimeout(() => {
+        document.getElementById('visualize-btn').click();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

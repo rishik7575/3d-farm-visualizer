@@ -6,3 +6,11 @@ export interface CropAllocation {
   percentage: number;
   acres: number;
 }
+
+export interface FarmData {
+  acres: number;
+  location: string;
+  soilType: string;
+  temperature: number;
+  rainfall: number;
+}

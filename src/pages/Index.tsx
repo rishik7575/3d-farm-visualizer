@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import LandForm from '@/components/LandForm';
 import CropSelector from '@/components/CropSelector';
@@ -5,7 +6,7 @@ import FarmScene from '@/components/FarmScene';
 import CropDetailCard from '@/components/CropDetailCard';
 import { CropAllocation, FarmData } from '@/types/farm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wheat, Sprout, Tractor, Leaf, Map, Info, BarChart } from "lucide-react";
+import { Wheat, Sprout, Tractor, Leaf, Map, Info, BarChart, Droplet, Thermometer } from "lucide-react";
 import { toast } from 'sonner';
 
 const Index = () => {
